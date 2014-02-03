@@ -1,0 +1,24 @@
+# --- !Ups
+
+CREATE TABLE REVISION_ENTRIES (
+  id           BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  copyRevision BIGINT,
+  path         VARCHAR(512) NOT NULL,
+  resourceType INT          NOT NULL,
+  revisionID   BIGINT       NOT NULL,
+  entryType    INT          NOT NULL,
+  copyPath     VARCHAR(512),
+  repoID       BIGINT       NOT NULL
+);
+
+-- foreign key constraints :
+ALTER TABLE REVISION_ENTRIES ADD CONSTRAINT REVISION_ENTRIES_FK1 FOREIGN KEY (revisionID) REFERENCES REVISIONS (id);
+ALTER TABLE REVISION_ENTRIES ADD CONSTRAINT REVISION_ENTRIES_FK2 FOREIGN KEY (repoID) REFERENCES REPOS (id);
+
+-- column group indexes :
+CREATE INDEX idxbfe10b82 ON REVISION_ENTRIES (repoID, revisionID);
+CREATE INDEX idx7fc50933 ON REVISION_ENTRIES (repoID, path);
+
+# --- !Downs
+
+DROP TABLE REVISION_ENTRIES;

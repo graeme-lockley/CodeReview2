@@ -1,0 +1,24 @@
+@(repos: Iterable[Repo])
+
+@main("Repos") {
+    <div class="page-header">
+        <h1>Repos</h1>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Subversion</th>
+            </tr>
+        </thead>
+        <tbody>
+        @for(repo <- repos) {
+            <tr>
+                <td> <a href="@routes.Repos.show(repo.id)"> @repo.name </a></td>
+                <td> @{repo.credentials.url} (@{repo.credentials.userName}) </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

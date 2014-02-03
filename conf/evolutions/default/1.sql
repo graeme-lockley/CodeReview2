@@ -1,0 +1,14 @@
+# --- !Ups
+
+CREATE TABLE REPOS (
+  id          BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  name        VARCHAR(128) NOT NULL,
+  svnUser     VARCHAR(128) NOT NULL,
+  svnURL      VARCHAR(128) NOT NULL,
+  svnPassword VARCHAR(128) NOT NULL
+);
+
+
+# --- !Downs
+
+DROP TABLE REPOS;

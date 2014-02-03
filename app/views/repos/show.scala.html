@@ -1,0 +1,40 @@
+@(repo: Repo)
+
+@main("@repo.name") {
+    <div class="page-header">
+        <h1>@repo.name</h1>
+    </div>
+
+    <table class="table table-condensed tablesorter" id="bob2">
+        <thead>
+            <tr>
+                <th>Revision Number</th>
+                <th>Author</th>
+                <th>Date</th>
+                <th>Message</th>
+                <th>Number of Entries</th>
+            </tr>
+        </thead>
+        <tbody>
+        @for(revision <- repo.revisions()) {
+            <tr>
+                <td> @revision.revisionNumber </td>
+                <td> @revision.author </td>
+                <td> @revision.date </td>
+                <td> @revision.logMessage </td>
+                <td> <a href="@routes.Revisions.show(revision.id)"><span class="badge">@revision.revisionEntries.size</span></a> </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <script type="text/javascript">
+    $(document).ready(function () {
+    $(function () {
+    $("#bob2").tablesorter({
+    sortList: [[0,1]]
+    });
+    });
+    });
+    </script>
+}
