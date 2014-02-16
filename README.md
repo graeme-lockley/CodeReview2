@@ -3,7 +3,7 @@ Code Review 2
 
 A Scala Play application that allows developers to perform code reviews over Subversion based repositories.
 
-The reason for building this application are:
+The reasons for building this application are:
 
 * I wanted to learn how to use the Play framework by building an application that was useful,
 * I wanted to start playing with interactive HTML pages, and
