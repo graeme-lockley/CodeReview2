@@ -334,7 +334,7 @@ Issue.prototype.refresh = function () {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data, status, jqXHR) {
-            this.refreshFromJSON(data);
+            issue.refreshFromJSON(data);
             events.event("Success-RefreshIssue")(issue);
         },
         error: function (jqXHR, status) {
