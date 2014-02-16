@@ -51,6 +51,9 @@ sealed trait RevisionEntry {
         }
     }
 
+    def revision: Revision = Repository.findRevisionOnRevisionEntryID(id).get
+
+
     def previousRevisionEntry(): Option[RevisionEntry] = {
         def calcFromRevision(): Revision = {
             def _fromRevision(currentFromRevision: Revision, revisions: Traversable[Revision]): Revision = {

@@ -1,4 +1,4 @@
-@(title: String)(content: Html)
+@(title: String, back: Option[views.BackSelection])(content: Html)
 
 <!DOCTYPE html>
 
@@ -28,6 +28,9 @@
                     <a class="navbar-brand" href="#">CodeReview</a>
                         <ul class="nav navbar-nav">
                             <li><a href="@routes.Repos.list()">Repositories</a></li>
+                            @if(back.isDefined) {
+                                <li><a href="@back.get.URL"><span class="glyphicon glyphicon-backward"></span> @back.get.name</a></li>
+                            }
                             @*<li><a href="#about">About</a></li>*@
                             @*<li><a href="#contact">Contact</a></li>*@
                             @*<li class="dropdown">*@

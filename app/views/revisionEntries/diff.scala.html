@@ -120,7 +120,9 @@ margin : 0 ;
 
 <script type="template/underscore" id="revisionNumber">@secondRevisionEntry.id</script>
 
-@main("Differences") {
+<!--  -->
+
+@main("Differences", Some(views.BackSelection("Revision " + secondRevisionEntry.revision.id + " - " + secondRevisionEntry.entry.repo.name, "/revisions/" + secondRevisionEntry.revision.id))) {
     <div class="page-header">
         <h1>Differences</h1>
 

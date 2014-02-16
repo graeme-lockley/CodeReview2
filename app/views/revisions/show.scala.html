@@ -1,6 +1,6 @@
 @(revision: Revision)
 
-@main("Revision") {
+@main("Revision", Some(views.BackSelection(revision.repo.name, "/repos/" + revision.repo.id))) {
     <div class="page-header">
         <h1>Revision</h1>
     </div>
