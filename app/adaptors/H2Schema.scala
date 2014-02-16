@@ -5,7 +5,6 @@ import org.squeryl.KeyedEntity
 import org.squeryl.PrimitiveTypeMode._
 import scala.Some
 import org.squeryl.Query
-import org.squeryl.dsl.CompositeKey2
 import org.squeryl.Schema
 import org.squeryl.SessionFactory
 import org.squeryl.Session
@@ -65,20 +64,34 @@ object DBAuthor {
     def lookup(authorID: Long): Option[DBAuthor] = Library.authors.lookup(authorID)
 }
 
-class DBRepoAuthor(val repoID: Long,
-                   val authorID: Long,
-                   val repoAuthorName: String) extends KeyedEntity[CompositeKey2[Long, Long]] {
-    def this() = this(0, 0, "")
+class DBRepoAuthor(val id: Long,
+                   val repoID: Long,
+                   val authorID: Option[Long],
+                   val repoAuthorName: String) extends KeyedEntity[Long] {
+    def this() = this(0, 0, None, "")
 
-    def id = compositeKey(repoID, authorID)
+//    def author: DBAuthor = Library.authors.lookup(authorID).get
+}
 
-    def author: DBAuthor = Library.authors.lookup(authorID).get
+object DBRepoAuthor {
+    def lookup(repoAuthorID: Long): Option[DBRepoAuthor] = Library.repoAuthors.lookup(repoAuthorID)
+
+    def getOrCreate(repoID: Long, repoAuthorName: String): DBRepoAuthor = {
+        val possibleResult = from(Library.repoAuthors)(ra =>
+            where(ra.repoID === repoID and ra.repoAuthorName === repoAuthorName)
+            select ra
+        )
+        if (possibleResult.size == 0)
+            Library.repoAuthors.insert(new DBRepoAuthor(0, repoID, None, repoAuthorName))
+        else
+            possibleResult.head
+    }
 }
 
 class DBRevision(val id: Long,
                  val repoID: Long,
                  val revisionNumber: Long, // TODO This should be an int rather than a long
-                 val author: Option[String],
+                 val repoAuthorID: Option[Long],
                  val date: Timestamp,
                  val logMessage: String) extends KeyedEntity[Long] {
     def this() = this(0, 0, 0, None, new Timestamp(java.lang.System.currentTimeMillis()), "")
@@ -199,9 +212,7 @@ object Library extends Schema {
 
     val repos = table[DBRepo]("REPOS")
     val authors = table[DBAuthor]("AUTHORS")
-    val repoAuthors = manyToManyRelation(repos, authors).via[DBRepoAuthor](
-        (repo, author, repoAuthor) => (repo.id === repoAuthor.repoID, author.id === repoAuthor.authorID)
-    )
+    val repoAuthors = table[DBRepoAuthor]("REPO_AUTHORS")
     val revisions = table[DBRevision]("REVISIONS")
     val revisionEntries = table[DBRevisionEntry]("REVISION_ENTRIES")
     val revisionEntriesContent = table[DBRevisionEntryContent]("REVISION_ENTRIES_CONTENT")
@@ -227,10 +238,6 @@ object Library extends Schema {
         columns(revisionEntry.repoID, revisionEntry.revisionID) are indexed,
         columns(revisionEntry.repoID, revisionEntry.path) are indexed
     ))
-
-    def lookupRepoAuthor(repoID: Long, repoAuthorName: String): Option[DBRepoAuthor] = {
-        repoAuthors.where(w => w.repoID === repoID and w.repoAuthorName === repoAuthorName).headOption
-    }
 
     def repoRevisions(repoID: Long): Query[(DBRevision, DBRevisionEntry)] = {
         from(revisions, revisionEntries)((r, re) =>

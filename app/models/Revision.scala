@@ -114,19 +114,19 @@ object NullRevisionEntry extends RevisionEntry {
     override def content() = ""
 }
 
-class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionNumber, val author: Option[Author], val date: Date, val logMessage: String, val revisionEntries: Traversable[RevisionEntry]) {
+class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionNumber, val repoAuthor: Option[RepoAuthor], val date: Date, val logMessage: String, val revisionEntries: Traversable[RevisionEntry]) {
     def findRevisionEntry(entry: Entry): Option[RevisionEntry] = {
         revisionEntries.find(p => p.entry.path == entry.path)
     }
 
     override def toString: String = {
-        (id, repo, revisionNumber, author, date, logMessage, revisionEntries).toString()
+        (id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries).toString()
     }
 }
 
 object Revision {
-    def apply(id: RevisionID, repo: Repo, revisionNumber: RevisionNumber, author: Option[Author], timestamp: Date, logMessage: String, revisionEntries: Traversable[RevisionEntry]): Revision = {
-        new Revision(id, repo, revisionNumber, author, timestamp, logMessage, revisionEntries)
+    def apply(id: RevisionID, repo: Repo, revisionNumber: RevisionNumber, repoAuthor: Option[RepoAuthor], timestamp: Date, logMessage: String, revisionEntries: Traversable[RevisionEntry]): Revision = {
+        new Revision(id, repo, revisionNumber, repoAuthor, timestamp, logMessage, revisionEntries)
     }
 
     def apply(): Revision = {

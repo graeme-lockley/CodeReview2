@@ -5,11 +5,8 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Query
 import scala.collection.mutable
 import scala.Some
-import models.RepoCredentials
 import java.util.Date
 import java.sql.Timestamp
-import adaptors.DBRevisionEntryFeedback
-import adaptors.DBRevisionEntryFeedbackType.DBRevisionEntryFeedbackType
 import adaptors.DBRevisionEntryFeedbackStatus.DBRevisionEntryFeedbackStatus
 
 
@@ -25,6 +22,23 @@ class SQLRepository extends Repository {
 
     private def convertDBAuthorToAuthor(dbAuthor: DBAuthor): Author = Author(dbAuthor.id, dbAuthor.name.getOrElse("(no name)"))
 
+    def findRepoAuthor(repoAuthorID: RepoAuthorID): Option[RepoAuthor] = inTransaction {
+        DBRepoAuthor.lookup(repoAuthorID) match {
+            case Some(dbRepoAuthor) => Some(convertDBRepoAuthorToRepoAuthor(dbRepoAuthor))
+            case None => None
+        }
+    }
+
+    def getRepoAuthor(repoAuthorID: RepoAuthorID): RepoAuthor = findRepoAuthor(repoAuthorID).get
+
+    private def convertDBRepoAuthorToRepoAuthor(dbRepoAuthor: DBRepoAuthor): RepoAuthor = {
+        val author = dbRepoAuthor.authorID match {
+            case Some(dbAuthorID) => Some(getAuthor(dbAuthorID))
+            case None => None
+        }
+        RepoAuthor(dbRepoAuthor.id, getRepo(dbRepoAuthor.repoID), author, dbRepoAuthor.repoAuthorName)
+    }
+
     def findAllRepos(): Iterable[Repo] = inTransaction {
         DBRepo.all().map(convertDBRepoToRepo)
     }
@@ -35,6 +49,8 @@ class SQLRepository extends Repository {
             case None => None
         }
     }
+
+    def getRepo(repoID: models.RepoID): Repo = findRepo(repoID).get
 
     private def convertDBRepoToRepo(dbRepo: DBRepo): Repo = Repo(dbRepo.id, dbRepo.name, RepoCredentials(dbRepo.svnUser, dbRepo.svnPassword, dbRepo.svnURL))
 
@@ -63,11 +79,12 @@ class SQLRepository extends Repository {
     def getRevisionEntry(revisionEntryID: models.RevisionEntryID): RevisionEntry = findRevisionEntry(revisionEntryID).get
 
     def revisionEntryFeedback(revisionEntry: RevisionEntry): Traversable[Feedback] = inTransaction {
-        DBRevisionEntryFeedback.directRevisionEntryFeedback(revisionEntry.id).map {e =>
-            if (e.feedbackType == DBRevisionEntryFeedbackType.Commentary)
-                Commentary(e.id, e.logMessage, getAuthor(e.authorID), e.date, revisionEntry, e.lineNumber)
-            else
-                Issue(e.id, e.logMessage, getAuthor(e.authorID), e.date, revisionEntry, e.lineNumber, convertDBRevisionEntryFeedbackType(e.status))
+        DBRevisionEntryFeedback.directRevisionEntryFeedback(revisionEntry.id).map {
+            e =>
+                if (e.feedbackType == DBRevisionEntryFeedbackType.Commentary)
+                    Commentary(e.id, e.logMessage, getAuthor(e.authorID), e.date, revisionEntry, e.lineNumber)
+                else
+                    Issue(e.id, e.logMessage, getAuthor(e.authorID), e.date, revisionEntry, e.lineNumber, convertDBRevisionEntryFeedbackType(e.status))
         }
     }
 
@@ -86,7 +103,7 @@ class SQLRepository extends Repository {
     def findIssue(issueID: IssueID): Option[Issue] = inTransaction {
         Library.revisionEntryComment.lookup(issueID) match {
             case Some(comment) =>
-                 if (comment.feedbackType == DBRevisionEntryFeedbackType.Issue)
+                if (comment.feedbackType == DBRevisionEntryFeedbackType.Issue)
                     Some(Issue(issueID, comment.logMessage, getAuthor(comment.authorID), comment.date, getRevisionEntry(comment.revisionEntryID), comment.lineNumber, convertDBRevisionEntryFeedbackType(comment.status)))
                 else
                     None
@@ -157,7 +174,7 @@ class SQLRepository extends Repository {
             dbRevision.id,
             repo,
             dbRevision.revisionNumber,
-            if (dbRevision.author.isDefined) Some(new Author(-1, dbRevision.author.get)) else None,
+            if (dbRevision.repoAuthorID.isDefined) Some(getRepoAuthor(dbRevision.repoAuthorID.get)) else None,
             dbRevision.date,
             dbRevision.logMessage,
             dbRevisionEntries.map(dbRevisionEntry => convertDBRevisionEntryToModel(repo, dbRevisionEntry))

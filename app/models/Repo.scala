@@ -22,3 +22,10 @@ object Repo {
 case class RepoCredentials(userName: String, password: String, url: String)
 
 object NullRepoCredentials extends RepoCredentials("NullUser", "NullPassword", "NullURL")
+
+class RepoAuthor(val id: RepoAuthorID, val repo: Repo, val author: Option[Author], val name: String) {
+}
+
+object RepoAuthor {
+    def apply(id: RepoAuthorID, repo: Repo, author: Option[Author], name: String): RepoAuthor = new RepoAuthor(id, repo, author, name)
+}

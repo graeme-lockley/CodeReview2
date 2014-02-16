@@ -18,28 +18,28 @@ import models.FileEntry
 import models.AddEntry
 import org.tmatesoft.svn.core.wc.SVNWCUtil
 import scala.collection.JavaConverters._
-import java.util.Date
 
 object SVNRepository {
-    def refresh(repo: Repo): Unit = {
-        inTransaction {
-            val repoID = repo.id
-            val dbRepo = DBRepo.get(repoID)
-            for (repoRevision <- repoRevisions(repo, dbRepo.largestRevisionNumber())) {
-                val authorName = if (repoRevision.author.isDefined) Some(repoRevision.author.get.name) else None
-                val dbRevision = new DBRevision(-1L, repoID, repoRevision.revisionNumber, authorName, new java.sql.Timestamp(repoRevision.date.getTime), repoRevision.logMessage)
+    def refresh(repo: Repo): Unit = inTransaction {
+        val repoID = repo.id
+        val dbRepo = DBRepo.get(repoID)
+        for (repoRevision: Revision <- repoRevisions(repo, dbRepo.largestRevisionNumber())) {
+            val dbRepoAuthorID = repoRevision.repoAuthor match {
+                case Some(author) => Some(DBRepoAuthor.getOrCreate(author.repo.id, author.name).id)
+                case None => None
+            }
+            val dbRevision = new DBRevision(-1L, repoID, repoRevision.revisionNumber, dbRepoAuthorID, new java.sql.Timestamp(repoRevision.date.getTime), repoRevision.logMessage)
 
-                Library.revisions.insert(dbRevision)
+            Library.revisions.insert(dbRevision)
 
-                for (revisionEntry <- repoRevision.revisionEntries) {
-                    val dbRevisionEntry = revisionEntry match {
-                        case AddEntry(id, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.AddEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
-                        case DeleteEntry(id, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.DeleteEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
-                        case ModifiedEntry(id, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.ModifyEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
-                        case ReplacedEntry(id, entry, path, revision) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.ReplaceEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, Some(path), Some(revision))
-                    }
-                    Library.revisionEntries.insert(dbRevisionEntry)
+            for (revisionEntry <- repoRevision.revisionEntries) {
+                val dbRevisionEntry = revisionEntry match {
+                    case AddEntry(id, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.AddEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
+                    case DeleteEntry(id, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.DeleteEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
+                    case ModifiedEntry(id, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.ModifyEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
+                    case ReplacedEntry(id, entry, path, revision) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.ReplaceEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, Some(path), Some(revision))
                 }
+                Library.revisionEntries.insert(dbRevisionEntry)
             }
         }
     }
@@ -56,7 +56,7 @@ object SVNRepository {
 
         def convertLogEntry(logEntry: SVNLogEntry): Revision = {
             val revisionEntries = logEntry.getChangedPaths.values.asScala.map(convertLogEntryPath)
-            val author = if (logEntry.getAuthor == null) None else Some(new Author(-1L, logEntry.getAuthor))
+            val author = if (logEntry.getAuthor == null) None else Some(RepoAuthor(-1L, repo, None, logEntry.getAuthor))
             new Revision(-1, repo, logEntry.getRevision, author, logEntry.getDate, logEntry.getMessage, revisionEntries)
         }
 

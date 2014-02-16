@@ -19,7 +19,7 @@
         @for(revision <- repo.revisions()) {
             <tr>
                 <td> @revision.revisionNumber </td>
-                <td> @revision.author </td>
+                <td> @revision.repoAuthor </td>
                 <td> @revision.date </td>
                 <td> @revision.logMessage </td>
                 <td> <a href="@routes.Revisions.show(revision.id)"><span class="badge">@revision.revisionEntries.size</span></a> </td>

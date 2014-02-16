@@ -6,6 +6,7 @@ package object models {
     type IssueResponseID = Long
     type LineNumberType = Long
     type RepoID = Long
+    type RepoAuthorID = Long
     type RevisionID = Long
     type RevisionEntryID = Long
     type RevisionNumber = Long
