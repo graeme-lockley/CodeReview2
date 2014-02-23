@@ -62,6 +62,11 @@ class DBAuthor(val id: Long,
 
 object DBAuthor {
     def lookup(authorID: Long): Option[DBAuthor] = Library.authors.lookup(authorID)
+
+    def lookup(name: String): Option[DBAuthor] = from(Library.authors)(a =>
+        where(a.name === Some(name))
+            select a
+    ).headOption
 }
 
 class DBRepoAuthor(val id: Long,
@@ -70,7 +75,7 @@ class DBRepoAuthor(val id: Long,
                    val repoAuthorName: String) extends KeyedEntity[Long] {
     def this() = this(0, 0, None, "")
 
-//    def author: DBAuthor = Library.authors.lookup(authorID).get
+    //    def author: DBAuthor = Library.authors.lookup(authorID).get
 }
 
 object DBRepoAuthor {
@@ -79,7 +84,7 @@ object DBRepoAuthor {
     def getOrCreate(repoID: Long, repoAuthorName: String): DBRepoAuthor = {
         val possibleResult = from(Library.repoAuthors)(ra =>
             where(ra.repoID === repoID and ra.repoAuthorName === repoAuthorName)
-            select ra
+                select ra
         )
         if (possibleResult.size == 0)
             Library.repoAuthors.insert(new DBRepoAuthor(0, repoID, None, repoAuthorName))
