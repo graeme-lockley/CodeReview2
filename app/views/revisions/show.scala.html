@@ -1,4 +1,4 @@
-@(revision: Revision)
+@(revision: Revision)(implicit request: play.api.mvc.RequestHeader)
 
 @main("Revision", Some(views.BackSelection(revision.repo.name, "/repos/" + revision.repo.id))) {
     <div class="page-header">

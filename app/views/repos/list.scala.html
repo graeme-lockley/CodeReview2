@@ -1,4 +1,4 @@
-@(repos: Iterable[Repo])
+@(repos: Iterable[Repo])(implicit request: play.api.mvc.RequestHeader)
 
 @main("Repos", None) {
     <div class="page-header">
