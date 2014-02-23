@@ -18,6 +18,13 @@ class SQLRepository extends Repository {
         }
     }
 
+    def findAuthorOnName(name: String): Option[Author] = inTransaction {
+        DBAuthor.lookup(name) match {
+            case Some(dbAuthor) => Some(convertDBAuthorToAuthor(dbAuthor))
+            case None => None
+        }
+    }
+
     def getAuthor(authorID: AuthorID): Author = findAuthor(authorID).get
 
     private def convertDBAuthorToAuthor(dbAuthor: DBAuthor): Author = Author(dbAuthor.id, dbAuthor.name.getOrElse("(no name)"))
