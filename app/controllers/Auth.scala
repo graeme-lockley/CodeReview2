@@ -11,8 +11,6 @@ object Auth extends Controller {
     def loggedOnUser(implicit request: RequestHeader): Option[Author] = {
         val authorId = NumberUtils.toLong(request.session.get(Security.username).getOrElse("-1"), -1)
 
-        println(s"AuthorID: $authorId")
-
         Repository.findAuthor(authorId)
     }
 
