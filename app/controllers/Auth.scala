@@ -26,21 +26,24 @@ object Auth extends Controller {
             )
             val (user, password) = loginForm.bindFromRequest().get
 
-            println(s"user -> [$user]")
-            println(s"password -> [$password]")
-
             Repository.findAuthorOnName(user) match {
                 case Some(author) =>
-                    println(s"Logged on: ${author.id}(${author.name})")
-                    Redirect(routes.Repos.list).withSession(Security.username -> s"${author.id}")
+                    Redirect(routes.Repos.list)
+                        .withSession(Security.username -> s"${author.id}")
+                        .flashing("success" -> s"You have successfully logged on - welcome back ${author.name}")
                 case None =>
-                    println("Unable to logon... add a flash error...")
-                    Ok(views.html.index("Bob 1"))
+                    Redirect(routes.Repos.list)
+                        .withSession()
+                        .flashing("error" -> "Unable to login with that user name/password combination.")
             }
     }
 
     def logout() = Action {
         implicit request =>
-            Redirect(routes.Repos.list).withSession()
+            val author = loggedOnUser
+
+            Redirect(routes.Repos.list)
+                .withSession()
+                .flashing("info" -> s"You have successfully been logged out - cheerio ${if (author.isEmpty) "" else author.get.name}")
     }
 }

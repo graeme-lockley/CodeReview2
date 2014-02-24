@@ -56,13 +56,42 @@
                             <input type="password" name="password" placeholder="Password" class="form-control">
                         </div>
                         <button type="submit" class="btn btn-success">Login</button>
+                        <button type="submit" class="btn btn-success">Forgot password</button>
+                        <button type="submit" class="btn btn-success">Sign up</button>
                         </form>
                     }
                 </div><!--/.navbar-collapse -->
             </div>
         </div>
         <div class="container-liquid">
-        @content
+            @if(request.flash.get("success").isDefined) {
+                @*<div class="alert alert-<%= name == :notice ? "success" : "danger" %>">   can also use "info" to create a blue box...*@
+                <div>&nbsp;</div>
+                <div>&nbsp;</div>
+                <div class="alert alert-success fade in">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    @request.flash.get("success").get
+                </div>
+            }
+            @if(request.flash.get("error").isDefined) {
+                @*<div class="alert alert-<%= name == :notice ? "success" : "danger" %>">   can also use "info" to create a blue box...*@
+                <div>&nbsp;</div>
+                <div>&nbsp;</div>
+                <div class="alert alert-danger fade in">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    @request.flash.get("error").get
+                </div>
+            }
+            @if(request.flash.get("info").isDefined) {
+                @*<div class="alert alert-<%= name == :notice ? "success" : "danger" %>">   can also use "info" to create a blue box...*@
+                <div>&nbsp;</div>
+                <div>&nbsp;</div>
+                <div class="alert alert-info fade in">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    @request.flash.get("info").get
+                </div>
+            }
+            @content
         </div>
     </body>
 </html>
