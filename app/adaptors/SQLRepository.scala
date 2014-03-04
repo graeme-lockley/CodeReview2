@@ -149,6 +149,14 @@ class SQLRepository extends Repository {
         convertToRevisions(repo, dbRepo.revisions())
     }
 
+    def repoAuthors(repo: Repo): Traversable[RepoAuthor] = inTransaction {
+        DBRepoAuthor.allInRepo(repo.id).map(dbRepoAuthor => RepoAuthor(dbRepoAuthor.id, getRepo(dbRepoAuthor.repoID),
+            dbRepoAuthor.authorID match {
+                case Some(authorID) => findAuthor(authorID)
+                case None => None
+            }, dbRepoAuthor.repoAuthorName))
+    }
+
     def entryRevisions(repo: Repo, path: String): Traversable[Revision] = {
         inTransaction {
             val dbRepo = DBRepo.get(repo.id)

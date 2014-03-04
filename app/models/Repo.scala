@@ -8,6 +8,8 @@ class Repo(val id: RepoID, val name: String, val credentials: RepoCredentials) {
     def revisions(): Traversable[Revision] = Repository.repoRevisions(this)
 
     def entryRevisions(path: String): Traversable[Revision] = Repository.entryRevisions(this, path)
+
+    def repoAuthors(): Traversable[RepoAuthor] = Repository.repoAuthors(this)
 }
 
 object NullRepo extends Repo(UNKNOWN_REPO_ID, "NullRepo", NullRepoCredentials) {
@@ -24,6 +26,7 @@ case class RepoCredentials(userName: String, password: String, url: String)
 object NullRepoCredentials extends RepoCredentials("NullUser", "NullPassword", "NullURL")
 
 class RepoAuthor(val id: RepoAuthorID, val repo: Repo, val author: Option[Author], val name: String) {
+    override def toString(): String = s"[RepoAuthor [id:$id][repo:$repo][author:$author][name:$name]]"
 }
 
 object RepoAuthor {

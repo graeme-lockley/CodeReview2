@@ -30,6 +30,8 @@ trait Repository {
 
     def repoRevisions(repo: Repo): Traversable[Revision]
 
+    def repoAuthors(repo: Repo): Traversable[RepoAuthor]
+
     def entryRevisions(repo: Repo, path: String): Traversable[Revision]
 
     def createCommentary(revisionEntry: RevisionEntry, lineNumber: Option[LineNumberType], comment: String, author: Author, date: Date): Commentary
@@ -75,6 +77,8 @@ object Repository {
     def refreshVCS(repo: Repo): Unit = repository.refreshVCS(repo)
 
     def repoRevisions(repo: Repo): Traversable[Revision] = repository.repoRevisions(repo)
+
+    def repoAuthors(repo: Repo): Traversable[RepoAuthor] = repository.repoAuthors(repo)
 
     def entryRevisions(repo: Repo, path: String): Traversable[Revision] = repository.entryRevisions(repo, path)
 

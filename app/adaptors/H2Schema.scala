@@ -74,8 +74,6 @@ class DBRepoAuthor(val id: Long,
                    val authorID: Option[Long],
                    val repoAuthorName: String) extends KeyedEntity[Long] {
     def this() = this(0, 0, None, "")
-
-    //    def author: DBAuthor = Library.authors.lookup(authorID).get
 }
 
 object DBRepoAuthor {
@@ -91,6 +89,11 @@ object DBRepoAuthor {
         else
             possibleResult.head
     }
+
+    def allInRepo(repoID: Long): Traversable[DBRepoAuthor] = from(Library.repoAuthors)(a =>
+        where(a.repoID === repoID)
+            select a
+    )
 }
 
 class DBRevision(val id: Long,
