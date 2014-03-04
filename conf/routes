@@ -12,6 +12,6 @@ PUT         /issues/:id/close/:authorID        controllers.Issues.close(id: Long
 GET         /issues/:id                        controllers.Issues.show(id:Long)
 PUT         /issuesFeedback                    controllers.IssuesFeedback.create
 POST        /auth/login                        controllers.Auth.login
-POST        /auth/logout                       controllers.Auth.logout
+GET         /auth/logout                       controllers.Auth.logout
 
 GET         /assets/*file                      controllers.Assets.at(path="/public", file)
