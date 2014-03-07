@@ -213,8 +213,6 @@ object DBRevisionEntryFeedback {
 }
 
 object Library extends Schema {
-    DatabaseSetup.initDatabase()
-
     val repos = table[DBRepo]("REPOS")
     val authors = table[DBAuthor]("AUTHORS")
     val repoAuthors = table[DBRepoAuthor]("REPO_AUTHORS")
@@ -255,21 +253,4 @@ object Library extends Schema {
     def default_author: DBAuthor = authors.lookup(1L).get
 }
 
-object DatabaseSetup {
-    Class.forName("org.h2.Driver")
-    val dbConnection = SessionFactory.concreteFactory = Some(() => Session.create(java.sql.DriverManager.getConnection("jdbc:h2:/Users/graemel/Workspace/CodeReview2/CodeReview"), new H2Adapter()))
-
-    def initDatabase() {
-    }
-}
-
-object DisplaySchemaTool {
-    def main(args: Array[String]): Unit = {
-        DatabaseSetup.initDatabase()
-
-        transaction {
-            Library.printDdl
-        }
-    }
-}
 
