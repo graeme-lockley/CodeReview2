@@ -1,5 +1,7 @@
 package models
 
+import org.squeryl.PrimitiveTypeMode._
+import adaptors.DBRepoAuthor
 
 class Repo(val id: RepoID, val name: String, val credentials: RepoCredentials) {
 
@@ -26,8 +28,15 @@ case class RepoCredentials(userName: String, password: String, url: String)
 object NullRepoCredentials extends RepoCredentials("NullUser", "NullPassword", "NullURL")
 
 class RepoAuthor(val id: RepoAuthorID, val repo: Repo, val author: Option[Author], val name: String) {
+	def update() = RepoAuthor.update(this)
 }
 
 object RepoAuthor {
     def apply(id: RepoAuthorID, repo: Repo, author: Option[Author], name: String): RepoAuthor = new RepoAuthor(id, repo, author, name)
+
+	def update(repoAuthor: RepoAuthor) = inTransaction {
+	  	DBRepoAuthor.update(modelToDB(repoAuthor))
+	}
+
+	def modelToDB(repoAuthor: RepoAuthor): DBRepoAuthor = DBRepoAuthor(repoAuthor.id, repoAuthor.repo.id, repoAuthor.author.map(x => x.id), repoAuthor.name)
 }
