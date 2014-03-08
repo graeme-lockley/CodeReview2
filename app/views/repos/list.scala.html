@@ -1,6 +1,35 @@
 @(repos: Iterable[Repo])(implicit request: play.api.mvc.RequestHeader)
 
+
 @main("Repos", None) {
+    <script type="template/underscore" id="repoAuthorAllocationItems">
+        <table>
+            <% repoAuthors.each(function(repoAuthor) { %>
+                <tr>
+                    <td><%- repoAuthor.get("name") %></td>
+                </tr>
+            <% }) %>
+        </table>
+    </script>
+
+    <div class="modal fade" id="repoAuthorAllocation">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">RepoAuthors</h4>
+                </div>
+                <div class="modal-body">
+                    <table id="repoAuthorAllocationList"></table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="page-header">
         <h1>Repos</h1>
     </div>
@@ -15,10 +44,19 @@
         <tbody>
         @for(repo <- repos) {
             <tr>
-                <td> <a href="@routes.Repos.show(repo.id)"> @repo.name </a></td>
-                <td> @{repo.credentials.url} (@{repo.credentials.userName}) </td>
+                <td><a href="@routes.Repos.show(repo.id)"> @repo.name </a></td>
+                <td>
+                    @{
+                        repo.credentials.url
+                    } (@{
+                    repo.credentials.userName
+                })
+                <button type="button" class="btn btn-primary" id="authorsBTN">Authors</button>
+                </td>
             </tr>
         }
         </tbody>
     </table>
 }
+
+<script src='@routes.Assets.at("javascripts/views/repos.list.js")' type="text/javascript"></script>
