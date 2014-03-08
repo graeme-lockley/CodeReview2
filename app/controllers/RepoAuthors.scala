@@ -6,7 +6,7 @@ object RepoAuthors extends Controller {
 	def update(id: Long) = Action(parse.json) {
 		implicit request =>
 			val repoAuthor = repoAuthorReader.read(request.body)
-			repoAuthor.update()
+			repoAuthor.save()
 
 			Ok("{code: 0}")
 	}

@@ -28,13 +28,13 @@ case class RepoCredentials(userName: String, password: String, url: String)
 object NullRepoCredentials extends RepoCredentials("NullUser", "NullPassword", "NullURL")
 
 class RepoAuthor(val id: RepoAuthorID, val repo: Repo, val author: Option[Author], val name: String) {
-	def update() = RepoAuthor.update(this)
+	def save() = RepoAuthor.save(this)
 }
 
 object RepoAuthor {
     def apply(id: RepoAuthorID, repo: Repo, author: Option[Author], name: String): RepoAuthor = new RepoAuthor(id, repo, author, name)
 
-	def update(repoAuthor: RepoAuthor) = inTransaction {
+	def save(repoAuthor: RepoAuthor) = inTransaction {
 	  	DBRepoAuthor.update(modelToDB(repoAuthor))
 	}
 
