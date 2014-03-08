@@ -86,6 +86,8 @@ class DBRepoAuthor(val id: Long,
 }
 
 object DBRepoAuthor {
+	def apply(id: Long, repoID: Long, authorID: Option[Long], repoAuthorName: String): DBRepoAuthor = new DBRepoAuthor(id, repoID, authorID, repoAuthorName)
+
     def lookup(repoAuthorID: Long): Option[DBRepoAuthor] = Library.repoAuthors.lookup(repoAuthorID)
 
     def getOrCreate(repoID: Long, repoAuthorName: String): DBRepoAuthor = {
@@ -98,6 +100,8 @@ object DBRepoAuthor {
         else
             possibleResult.head
     }
+
+	def update(value: DBRepoAuthor) = Library.repoAuthors.update(value)
 }
 
 class DBRevision(val id: Long,
