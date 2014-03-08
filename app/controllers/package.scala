@@ -6,6 +6,7 @@ import models.Issue
 import models.IssueResponse
 import play.api.libs.json._
 import play.api.libs.json.JsObject
+import play.api.libs.json.Json
 import play.api.libs.json.JsString
 
 package object controllers {
@@ -78,14 +79,28 @@ package object controllers {
 				"name" -> repoAuthor.name
 			)
 
-			if (repoAuthor.author.isDefined)
-				result.+("author", authorWriter.write(repoAuthor.author.get))
-			else
-				result
+			repoAuthor.author match {
+				case Some(author) => result ++ Json.obj("author" -> authorWriter.write(author))
+				case None => result
+			}
 		}
 
 		def write(repoAuthors: Traversable[RepoAuthor]): JsValue = {
 			Json.toJson(repoAuthors.map(x => write(x)))
+		}
+	}
+
+	val repoAuthorReader = new {
+		def read(json: JsValue): RepoAuthor = {
+			val author = (json \ "author" \ "id").asOpt[Long] match {
+				case None => None
+				case Some(authorID) => Repository.findAuthor(authorID)
+			}
+			RepoAuthor(
+				(json \ "id").as[Long],
+				Repository.findRepo((json \ "repoID").as[Long]).get,
+				author,
+				(json \ "name").as[String])
 		}
 	}
 
