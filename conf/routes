@@ -2,6 +2,7 @@ GET         /                                  controllers.Application.index
 GET         /repos                             controllers.Repos.list
 GET         /repos/:id                         controllers.Repos.show(id: Long)
 GET         /repos/:id/refresh                 controllers.Repos.refresh(id: Long)
+GET         /repos/:id/authors                 controllers.Repos.authors(id: Long)
 GET         /revisions/:id                     controllers.Revisions.show(id: Long)
 GET         /revisionEntries/diff/:id          controllers.RevisionEntries.diffAgainstPreviousRevision(id: Long)
 GET         /revisionEntries/:id               controllers.RevisionEntries.show(id: Long)
