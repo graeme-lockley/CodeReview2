@@ -27,6 +27,6 @@ object Repos extends Controller {
   def authors(id: Long) = Action {
     implicit request =>
       val repo = Repository.findRepo(id).get
-      Ok(repoAuthorWriter.write(repo.repoAuthors))
+      Ok(repoAuthorWriter.write(repo.repoAuthors()))
   }
 }
