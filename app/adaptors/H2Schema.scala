@@ -42,7 +42,7 @@ class DBRepo(val id: Long,
 }
 
 object DBRepo {
-    def all(): Query[DBRepo] = {
+	def all(): Query[DBRepo] = {
         from(Library.repos)(w => select(w))
     }
 
@@ -53,6 +53,13 @@ object DBRepo {
     def get(repoID: Long): DBRepo = {
         lookup(repoID).get
     }
+
+	def repoAuthors(repoID: models.RepoID): Traversable[DBRepoAuthor] = {
+		from(Library.repoAuthors)(ra =>
+			where (ra.repoID === repoID)
+			select ra
+		)
+	}
 }
 
 class DBAuthor(val id: Long,
