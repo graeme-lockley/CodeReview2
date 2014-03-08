@@ -8,6 +8,8 @@ class Repo(val id: RepoID, val name: String, val credentials: RepoCredentials) {
     def revisions(): Traversable[Revision] = Repository.repoRevisions(this)
 
     def entryRevisions(path: String): Traversable[Revision] = Repository.entryRevisions(this, path)
+
+	def repoAuthors(): Traversable[RepoAuthor] = Repository.repoAuthors(this)
 }
 
 object NullRepo extends Repo(UNKNOWN_REPO_ID, "NullRepo", NullRepoCredentials) {
