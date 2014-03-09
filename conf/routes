@@ -1,4 +1,6 @@
 GET         /                                  controllers.Application.index
+GET         /authors                           controllers.Authors.listAsJSON
+GET         /authors/html                      controllers.Authors.listAsHTML
 GET         /repos                             controllers.Repos.list
 GET         /repos/:id                         controllers.Repos.show(id: Long)
 GET         /repos/:id/refresh                 controllers.Repos.refresh(id: Long)

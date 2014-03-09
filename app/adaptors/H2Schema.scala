@@ -72,6 +72,8 @@ object DBAuthor {
 		where(a.name === name)
 			select a
 	).headOption
+
+	def all(): Traversable[DBAuthor] = from(Library.authors)(w => select(w))
 }
 
 class DBRepoAuthor(val id: Long,

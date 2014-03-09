@@ -108,9 +108,13 @@ package object controllers {
 		def write(author: Author): JsObject = {
 			Json.obj(
 				"id" -> author.id,
-				"name" -> author.name
+				"name" -> author.name,
+				"emailAddress" -> author.emailAddress,
+				"isAdmin" -> author.isAdmin
 			)
 		}
+
+		def write(authors: Traversable[Author]): JsValue = Json.toJson(authors.map(x => write(x)))
 	}
 
 	val dateWriter = new {

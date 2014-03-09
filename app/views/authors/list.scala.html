@@ -1,0 +1,70 @@
+@(authors: Traversable[Author])(implicit request: play.api.mvc.RequestHeader)
+
+@main("Authors", None) {
+    <script type="template/underscore" id="listAuthorsTemplate">
+        <table>
+            <thead>
+                <tr>
+                    <th> Name </th>
+                    <th> Email Address </th>
+                    <th>
+                        <% if (loggedOnUser.isAdmin) { %>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" id="SelectAddAuthor">Add</button>
+                        <% } else { %>
+                            &nbsp;
+                        <% } %>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            <% authors.each(function(author) { %>
+                <tr>
+                    <td><%= author.get("name") %></td>
+                    <td><%= author.get("emailAddress") %></td>
+                    <td> </td>
+                </tr>
+            <% }) %>
+            </tbody>
+        </table>
+    </script>
+
+    <div class="modal fade" id="AddAuthorModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Add Author</h4>
+                </div>
+                <form role="form">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="AddAuthorName">Name</label>
+                            <input type="text" class="form-control" id="AddAuthorName" placeholder="Author name">
+                        </div>
+                        <div class="form-group">
+                            <label for="AddAuthorEmailAddress">Email Address</label>
+                            <input type="email" class="form-control" id="AddAuthorEmailAddress" placeholder="Author email address">
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="AddAuthorAdministrator"> Administrator
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-header">
+        <h1>Authors</h1>
+    </div>
+
+    <table class="table" id="listAuthors">
+    </table>
+}
+
+<script src='@routes.Assets.at("javascripts/views/authors.list.js")' type="text/javascript"></script>
