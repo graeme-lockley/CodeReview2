@@ -27,27 +27,25 @@
                         <span class="icon-bar"></span>
                     </button>
                     <a class="navbar-brand" href="#">CodeReview</a>
-                        <ul class="nav navbar-nav">
-                            <li><a href="@routes.Repos.list()">Repositories</a></li>
-                            @if(back.isDefined) {
-                                <li><a href="@back.get.URL"><span class="glyphicon glyphicon-backward"></span> @back.get.name</a></li>
-                            }
-                            @*<li><a href="#about">About</a></li>*@
-                            @*<li><a href="#contact">Contact</a></li>*@
-                            @*<li class="dropdown">*@
-                                @*<a href="#" class="dropdown-toggle" data-toggle="dropdown">Administration <b class="caret"></b></a>*@
-                                @*<ul class="dropdown-menu">*@
-                                    @*<li><a href="@routes.Repos.list()">Repositories</a></li>*@
-                                    @*<li><a href="#">Users</a></li>*@
-                                @*</ul>*@
-                            @*</li>*@
-                        </ul>
+                    <ul class="nav navbar-nav">
+                        <li><a href="@routes.Repos.list()">Repositories</a></li>
+                        @if(back.isDefined) {
+                            <li><a href="@back.get.URL"><span class="glyphicon glyphicon-backward"></span> @back.get.name</a></li>
+                        }
+                    </ul>
                 </div>
                 <div class="navbar-collapse collapse">
                     @if(controllers.Auth.loggedOnUser.isDefined) {
-                        <form class="navbar-form navbar-right" method="post" action="@routes.Auth.logout()">
-                            <button type="submit" class="btn btn-success">Logout</button>
-                        </form>
+                         <ul class="nav navbar-nav navbar-right">
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Administration <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">Authors</a></li>
+                                    <li><a href="@routes.Repos.list()">Repositories</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="@routes.Auth.logout()">Logout</a></li>
+                        </ul>
                     } else {
                         <form class="navbar-form navbar-right" method="post" action="@routes.Auth.login()">
                             <div class="form-group">
@@ -56,7 +54,7 @@
                             <button type="submit" class="btn btn-success">Login</button>
                         </form>
                     }
-                </div><!--/.navbar-collapse -->
+                </div>
             </div>
         </div>
         <div class="container-liquid">
