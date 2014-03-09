@@ -2,6 +2,7 @@ package object models {
     type AuthorID = Long
     type CommentID = Long
     type CommentResponseID = Long
+	type EmailAddress = String
     type IssueID = Long
     type IssueResponseID = Long
     type LineNumberType = Long

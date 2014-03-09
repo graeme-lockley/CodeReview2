@@ -25,12 +25,11 @@ object Auth extends Controller {
 	def login() = Action {
 		implicit request =>
 			val loginForm = Form(
-				tuple(
-					"name" -> nonEmptyText,
-					"password" -> text
+				single(
+					"name" -> nonEmptyText
 				)
 			)
-			val (user, password) = loginForm.bindFromRequest().get
+			val user = loginForm.bindFromRequest().get
 
 			Repository.findAuthorOnName(user) match {
 				case Some(author) =>

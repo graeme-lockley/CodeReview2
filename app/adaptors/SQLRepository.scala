@@ -27,7 +27,7 @@ class SQLRepository extends Repository {
 
     def getAuthor(authorID: AuthorID): Author = findAuthor(authorID).get
 
-    private def convertDBAuthorToAuthor(dbAuthor: DBAuthor): Author = Author(dbAuthor.id, dbAuthor.name.getOrElse("(no name)"))
+    private def convertDBAuthorToAuthor(dbAuthor: DBAuthor): Author = Author(dbAuthor.id, dbAuthor.name, dbAuthor.emailAddress, dbAuthor.isAdmin)
 
     def findRepoAuthor(repoAuthorID: RepoAuthorID): Option[RepoAuthor] = inTransaction {
         DBRepoAuthor.lookup(repoAuthorID) match {
