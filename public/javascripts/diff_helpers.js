@@ -1,3 +1,5 @@
+var loggedOnUser = undefined;
+
 function applyTemplate(templateName, templateState) {
     var theTemplate = $("#" + templateName).html();
     return _.template(theTemplate, templateState);
@@ -70,7 +72,7 @@ Feedback.prototype.commitCommentDraft = function (commentaryDraft, revisionEntry
     events.event("Start-CommitCommentDraft")(commentaryDraft);
     commentaryDraft.commitDraft(revisionEntryID, comment, function (dbid, when) {
         feedback.removeOnName(commentaryDraft.name());
-        var feedbackComment = new FeedbackComment(commentaryDraft.lineNumber, dbid, comment, "Graeme Lockley", when, []);
+        var feedbackComment = new FeedbackComment(commentaryDraft.lineNumber, dbid, comment, loggedOnUser.name, when, []);
         feedback.addFeedbackItem(feedbackComment);
         events.event("Success-CommitCommentDraft")(commentaryDraft, feedbackComment);
     }, function (reason) {
@@ -81,7 +83,7 @@ Feedback.prototype.commitIssueDraft = function (issueDraft, revisionEntryID, com
     events.event("Start-CommitIssueDraft")(issueDraft);
     issueDraft.commitDraft(revisionEntryID, comment, function (dbid, when) {
         feedback.removeOnName(issueDraft.name());
-        var issue = new Issue(issueDraft.lineNumber, dbid, comment, "Graeme Lockley", when, [], "Open");
+        var issue = new Issue(issueDraft.lineNumber, dbid, comment, loggedOnUser.name, when, [], "Open");
         feedback.addFeedbackItem(issue);
         events.event("Success-CommitIssueDraft")(issueDraft, issue);
     }, function (reason) {
@@ -98,7 +100,7 @@ Feedback.prototype.commitDraftFeedbackOnComment = function (draftFeedbackOnComme
     draftFeedbackOnComment.commitDraft(comment, function (dbid, when) {
         feedback.removeOnName(draftFeedbackOnComment.name());
         draftFeedbackOnComment.clearDraft();
-        var feedbackOnComment = new FeedbackOnComment(dbid, comment, "Dean Gerber", when);
+        var feedbackOnComment = new FeedbackOnComment(dbid, comment, loggedOnUser.name, when);
         draftFeedbackOnComment.comment.addFeedbackOnComment(feedbackOnComment);
         events.event("Success-CommitDraftFeedbackOnComment")(draftFeedbackOnComment, feedbackOnComment);
     }, function (reason) {
@@ -115,7 +117,7 @@ Feedback.prototype.commitDraftFeedbackOnIssue = function (draftFeedbackOnIssue, 
     draftFeedbackOnIssue.commitDraft(comment, function (dbid, when) {
         feedback.removeOnName(draftFeedbackOnIssue.name());
         draftFeedbackOnIssue.clearDraft();
-        var feedbackOnIssue = new FeedbackOnIssue(dbid, comment, "Dean Gerber", when);
+        var feedbackOnIssue = new FeedbackOnIssue(dbid, comment, loggedOnUser.name, when);
         draftFeedbackOnIssue.issue.addFeedbackOnIssue(feedbackOnIssue);
         events.event("Success-CommitDraftFeedbackOnIssue")(draftFeedbackOnIssue, feedbackOnIssue);
     }, function (reason) {
@@ -178,7 +180,7 @@ FeedbackCommentDraft.prototype.mustAnnotate = function () {
     return false;
 };
 FeedbackCommentDraft.prototype.commitDraft = function (revisionEntryID, comment, successContinuation, failureContinuation) {
-    var content = JSON.stringify({"comment": comment, "authorID": 1, "revisionEntryID": revisionEntryID, "lineNumber": this.lineNumber});
+    var content = JSON.stringify({"comment": comment, "authorID": loggedOnUser.id, "revisionEntryID": revisionEntryID, "lineNumber": this.lineNumber});
 
     console.log(content);
 
@@ -211,7 +213,7 @@ IssueDraft.prototype.mustAnnotate = function () {
     return false;
 };
 IssueDraft.prototype.commitDraft = function (revisionEntryID, comment, successContinuation, failureContinuation) {
-    var content = JSON.stringify({"comment": comment, "authorID": 1, "revisionEntryID": revisionEntryID, "lineNumber": this.lineNumber});
+    var content = JSON.stringify({"comment": comment, "authorID": loggedOnUser.id, "revisionEntryID": revisionEntryID, "lineNumber": this.lineNumber});
 
     console.log(content);
 
@@ -311,7 +313,7 @@ Issue.prototype.closeIssue = function () {
     var issue = this;
     $.ajax({
         type: "PUT",
-        url: "/issues/" + issue.dbid + "/close/1",
+        url: "/issues/" + issue.dbid + "/close/" + loggedOnUser.id,
         data: "{}",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -396,7 +398,7 @@ DraftFeedbackOnComment.prototype.item = function () {
     return this.comment;
 };
 DraftFeedbackOnComment.prototype.commitDraft = function (comment, successContinuation, failureContinuation) {
-    var content = JSON.stringify({"comment": comment, "authorID": 1, "commentID": this.item().dbid});
+    var content = JSON.stringify({"comment": comment, "authorID": loggedOnUser.id, "commentID": this.item().dbid});
 
     console.log(content);
 
@@ -432,7 +434,7 @@ DraftFeedbackOnIssue.prototype.item = function () {
     return this.issue;
 };
 DraftFeedbackOnIssue.prototype.commitDraft = function (comment, successContinuation, failureContinuation) {
-    var content = JSON.stringify({"comment": comment, "authorID": 1, "issueID": this.item().dbid});
+    var content = JSON.stringify({"comment": comment, "authorID": loggedOnUser.id, "issueID": this.item().dbid});
 
     console.log(content);
 
@@ -753,7 +755,7 @@ CommentLineEntry.prototype.removeFromPage = function () {
 };
 
 CommentLineEntry.prototype.save = function () {
-    var content = JSON.stringify({"comment": this.textContent(), "authorID": 1, "revisionEntryID": parseInt($("#revisionNumber").html()), "lineNumber": this.commentLine.lineNumber});
+    var content = JSON.stringify({"comment": this.textContent(), "authorID": loggedOnUser.id, "revisionEntryID": parseInt($("#revisionNumber").html()), "lineNumber": this.commentLine.lineNumber});
     var commentLineEntry = this;
 
     $.ajax({
@@ -763,7 +765,7 @@ CommentLineEntry.prototype.save = function () {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data, status, jqXHR) {
-            var commentLineComment = new CommentLineComment(commentLineEntry.commentLine, commentLineEntry.sequenceNumber, 123, commentLineEntry.textContent(), "Graeme Lockley", "16 January 2015");
+            var commentLineComment = new CommentLineComment(commentLineEntry.commentLine, commentLineEntry.sequenceNumber, 123, commentLineEntry.textContent(), loggedOnUser.name, "16 January 2015");
             commentLineComment.replaceCommentLineEntry(commentLineEntry);
         },
 
@@ -828,5 +830,24 @@ $(document).ready(function () {
     $(function () {
         $("bob2").tablesorter();
     });
+});
+
+function fetchLoggedOnUser() {
+    $.ajax({
+        type: "GET",
+        url: "/auth/user",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data, status, jqXHR) {
+            loggedOnUser = data;
+        },
+        error: function (jqXHR, status) {
+            console.error(jqXHR);
+        }
+    });
+}
+
+$(document).ready(function () {
+    fetchLoggedOnUser();
 });
 

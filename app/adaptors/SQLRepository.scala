@@ -27,7 +27,7 @@ class SQLRepository extends Repository {
 
     def getAuthor(authorID: AuthorID): Author = findAuthor(authorID).get
 
-    private def convertDBAuthorToAuthor(dbAuthor: DBAuthor): Author = Author(dbAuthor.id, dbAuthor.name.getOrElse("(no name)"))
+    private def convertDBAuthorToAuthor(dbAuthor: DBAuthor): Author = Author(dbAuthor.id, dbAuthor.name, dbAuthor.emailAddress, dbAuthor.isAdmin)
 
     def findRepoAuthor(repoAuthorID: RepoAuthorID): Option[RepoAuthor] = inTransaction {
         DBRepoAuthor.lookup(repoAuthorID) match {
@@ -149,15 +149,11 @@ class SQLRepository extends Repository {
         convertToRevisions(repo, dbRepo.revisions())
     }
 
-    def repoAuthors(repo: Repo): Traversable[RepoAuthor] = inTransaction {
-        DBRepoAuthor.allInRepo(repo.id).map(dbRepoAuthor => RepoAuthor(dbRepoAuthor.id, getRepo(dbRepoAuthor.repoID),
-            dbRepoAuthor.authorID match {
-                case Some(authorID) => findAuthor(authorID)
-                case None => None
-            }, dbRepoAuthor.repoAuthorName))
-    }
+	def repoAuthors(repo: Repo): Traversable[RepoAuthor] = inTransaction {
+		DBRepo.repoAuthors(repo.id).map(ra => convertDBRepoAuthorToRepoAuthor(ra))
+	}
 
-    def entryRevisions(repo: Repo, path: String): Traversable[Revision] = {
+	def entryRevisions(repo: Repo, path: String): Traversable[Revision] = {
         inTransaction {
             val dbRepo = DBRepo.get(repo.id)
             convertToRevisions(repo, dbRepo.entryRevisions(path))

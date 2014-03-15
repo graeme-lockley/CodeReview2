@@ -30,7 +30,7 @@ trait Repository {
 
     def repoRevisions(repo: Repo): Traversable[Revision]
 
-    def repoAuthors(repo: Repo): Traversable[RepoAuthor]
+	def repoAuthors(repo: Repo): Traversable[RepoAuthor]
 
     def entryRevisions(repo: Repo, path: String): Traversable[Revision]
 
@@ -50,7 +50,7 @@ trait Repository {
 }
 
 object Repository {
-    var repository: Repository = new SQLRepository()
+	var repository: Repository = new SQLRepository()
 
     def findAuthor(authorID: AuthorID): Option[Author] = repository.findAuthor(authorID)
 
@@ -78,7 +78,7 @@ object Repository {
 
     def repoRevisions(repo: Repo): Traversable[Revision] = repository.repoRevisions(repo)
 
-    def repoAuthors(repo: Repo): Traversable[RepoAuthor] = repository.repoAuthors(repo)
+	def repoAuthors(repo: Repo): Traversable[RepoAuthor] = repository.repoAuthors(repo)
 
     def entryRevisions(repo: Repo, path: String): Traversable[Revision] = repository.entryRevisions(repo, path)
 
