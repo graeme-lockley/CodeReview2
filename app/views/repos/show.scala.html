@@ -19,7 +19,7 @@
         @for(revision <- repo.revisions()) {
             <tr>
                 <td> @revision.revisionNumber </td>
-                <td> @revision.repoAuthor </td>
+                <td> @{if (revision.repoAuthor.isDefined) revision.repoAuthor.get.name else ""} </td>
                 <td> @revision.date </td>
                 <td> @revision.logMessage </td>
                 <td> <a href="@routes.Revisions.show(revision.id)"><span class="badge">@revision.revisionEntries.size</span></a> </td>
