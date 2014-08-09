@@ -94,7 +94,7 @@ package object controllers {
 		def read(json: JsValue): RepoAuthor = {
 			val author = (json \ "author" \ "id").asOpt[Long] match {
 				case None => None
-				case Some(authorID) => Repository.findAuthor(authorID)
+				case Some(authorID) => Author.find(authorID)
 			}
 			RepoAuthor(
 				(json \ "id").as[Long],

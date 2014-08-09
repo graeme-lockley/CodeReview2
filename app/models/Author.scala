@@ -14,5 +14,21 @@ object Author {
     DBAuthor.all().map(x => convertDBAuthorToAuthor(x))
   }
 
+  def find(authorID: AuthorID): Option[Author] = inTransaction {
+    DBAuthor.lookup(authorID) match {
+      case Some(dbAuthor) => Some(convertDBAuthorToAuthor(dbAuthor))
+      case None => None
+    }
+  }
+
+  def findOnName(name: String): Option[Author] = inTransaction {
+    DBAuthor.lookup(name) match {
+      case Some(dbAuthor) => Some(convertDBAuthorToAuthor(dbAuthor))
+      case None => None
+    }
+  }
+
+  def get(authorID: AuthorID): Author = find(authorID).get
+
   private def convertDBAuthorToAuthor(dbAuthor: DBAuthor): Author = Author(dbAuthor.id, dbAuthor.name, dbAuthor.emailAddress, dbAuthor.isAdmin)
 }

@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc.{Action, Controller}
-import models.Repository
+import models.{Author, Repository}
 import play.api.libs.json.Json
 
 object IssuesFeedback extends Controller {
@@ -10,7 +10,7 @@ object IssuesFeedback extends Controller {
             val jsValue = request.body
 
             val issue = Repository.findIssue((jsValue \ "issueID").as[Long]).get
-            val author = Repository.findAuthor((jsValue \ "authorID").as[Long]).get
+            val author = Author.find((jsValue \ "authorID").as[Long]).get
 
             val issueResponse = issue.addResponse((jsValue \ "comment").as[String], author)
 

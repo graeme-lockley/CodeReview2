@@ -9,26 +9,7 @@ import java.util.Date
 import java.sql.Timestamp
 import adaptors.DBRevisionEntryFeedbackStatus.DBRevisionEntryFeedbackStatus
 
-
 class SQLRepository extends Repository {
-    def findAuthor(authorID: AuthorID): Option[Author] = inTransaction {
-        DBAuthor.lookup(authorID) match {
-            case Some(dbAuthor) => Some(convertDBAuthorToAuthor(dbAuthor))
-            case None => None
-        }
-    }
-
-    def findAuthorOnName(name: String): Option[Author] = inTransaction {
-        DBAuthor.lookup(name) match {
-            case Some(dbAuthor) => Some(convertDBAuthorToAuthor(dbAuthor))
-            case None => None
-        }
-    }
-
-    def getAuthor(authorID: AuthorID): Author = findAuthor(authorID).get
-
-    private def convertDBAuthorToAuthor(dbAuthor: DBAuthor): Author = Author(dbAuthor.id, dbAuthor.name, dbAuthor.emailAddress, dbAuthor.isAdmin)
-
     def findRepoAuthor(repoAuthorID: RepoAuthorID): Option[RepoAuthor] = inTransaction {
         DBRepoAuthor.lookup(repoAuthorID) match {
             case Some(dbRepoAuthor) => Some(convertDBRepoAuthorToRepoAuthor(dbRepoAuthor))
@@ -40,7 +21,7 @@ class SQLRepository extends Repository {
 
     private def convertDBRepoAuthorToRepoAuthor(dbRepoAuthor: DBRepoAuthor): RepoAuthor = {
         val author = dbRepoAuthor.authorID match {
-            case Some(dbAuthorID) => Some(getAuthor(dbAuthorID))
+            case Some(dbAuthorID) => Some(Author.get(dbAuthorID))
             case None => None
         }
         RepoAuthor(dbRepoAuthor.id, getRepo(dbRepoAuthor.repoID), author, dbRepoAuthor.repoAuthorName)
@@ -89,9 +70,9 @@ class SQLRepository extends Repository {
         DBRevisionEntryFeedback.directRevisionEntryFeedback(revisionEntry.id).map {
             e =>
                 if (e.feedbackType == DBRevisionEntryFeedbackType.Commentary)
-                    Commentary(e.id, e.logMessage, getAuthor(e.authorID), e.date, revisionEntry, e.lineNumber)
+                    Commentary(e.id, e.logMessage, Author.get(e.authorID), e.date, revisionEntry, e.lineNumber)
                 else
-                    Issue(e.id, e.logMessage, getAuthor(e.authorID), e.date, revisionEntry, e.lineNumber, convertDBRevisionEntryFeedbackType(e.status))
+                    Issue(e.id, e.logMessage, Author.get(e.authorID), e.date, revisionEntry, e.lineNumber, convertDBRevisionEntryFeedbackType(e.status))
         }
     }
 
@@ -100,7 +81,7 @@ class SQLRepository extends Repository {
         Library.revisionEntryComment.lookup(commentID) match {
             case Some(comment) =>
                 if (comment.feedbackType == DBRevisionEntryFeedbackType.Commentary)
-                    Some(Commentary(commentID, comment.logMessage, getAuthor(comment.authorID), comment.date, getRevisionEntry(comment.revisionEntryID), comment.lineNumber))
+                    Some(Commentary(commentID, comment.logMessage, Author.get(comment.authorID), comment.date, getRevisionEntry(comment.revisionEntryID), comment.lineNumber))
                 else
                     None
             case None => None
@@ -111,7 +92,7 @@ class SQLRepository extends Repository {
         Library.revisionEntryComment.lookup(issueID) match {
             case Some(comment) =>
                 if (comment.feedbackType == DBRevisionEntryFeedbackType.Issue)
-                    Some(Issue(issueID, comment.logMessage, getAuthor(comment.authorID), comment.date, getRevisionEntry(comment.revisionEntryID), comment.lineNumber, convertDBRevisionEntryFeedbackType(comment.status)))
+                    Some(Issue(issueID, comment.logMessage, Author.get(comment.authorID), comment.date, getRevisionEntry(comment.revisionEntryID), comment.lineNumber, convertDBRevisionEntryFeedbackType(comment.status)))
                 else
                     None
             case None => None
@@ -213,7 +194,7 @@ class SQLRepository extends Repository {
     }
 
     def commentaryResponses(commentary: Commentary): Traversable[CommentaryResponse] = inTransaction {
-        DBRevisionEntryFeedback.childrenByDate(commentary.id).map(e => CommentaryResponse(e.id, e.logMessage, getAuthor(e.authorID), e.date, commentary))
+        DBRevisionEntryFeedback.childrenByDate(commentary.id).map(e => CommentaryResponse(e.id, e.logMessage, Author.get(e.authorID), e.date, commentary))
     }
 
     def createCommentaryResponse(commentary: models.Commentary, comment: String, author: models.Author, date: Date): models.CommentaryResponse = inTransaction {
@@ -245,6 +226,6 @@ class SQLRepository extends Repository {
     }
 
     def issueResponses(issue: Issue): Traversable[IssueResponse] = inTransaction {
-        DBRevisionEntryFeedback.childrenByDate(issue.id).map(e => IssueResponse(e.id, e.logMessage, getAuthor(e.authorID), e.date, issue))
+        DBRevisionEntryFeedback.childrenByDate(issue.id).map(e => IssueResponse(e.id, e.logMessage, Author.get(e.authorID), e.date, issue))
     }
 }

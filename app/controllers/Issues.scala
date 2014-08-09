@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc.{Action, Controller}
-import models.Repository
+import models.{Author, Repository}
 import play.api.libs.json._
 
 object Issues extends Controller {
@@ -15,7 +15,7 @@ object Issues extends Controller {
             val lineNumber = (jsValue \ "lineNumber").asOpt[Long]
 
             val revisionEntry = Repository.findRevisionEntry(revisionEntryID).get
-            val author = Repository.findAuthor(authorID).get
+            val author = Author.find(authorID).get
             val issue = revisionEntry.addIssue(lineNumber, comment, author)
 
             val jsonResponse = Json.obj(
@@ -28,7 +28,7 @@ object Issues extends Controller {
 
     def close(issueID: Long, authorID: Long) = Action(parse.json) {
         request =>
-            (Repository.findAuthor(authorID), Repository.findIssue(issueID)) match {
+            (Author.find(authorID), Repository.findIssue(issueID)) match {
                 case (Some(author), Some(issue)) =>
                     issue.close(author) match {
                         case Left(errorMessage) => BadRequest("{\"message\": \"" + errorMessage + "\"}")

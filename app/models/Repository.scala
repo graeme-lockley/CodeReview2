@@ -5,10 +5,6 @@ import java.util.Date
 import adaptors.SQLRepository
 
 trait Repository {
-  def findAuthor(authorID: AuthorID): Option[Author]
-
-  def findAuthorOnName(name: String): Option[Author]
-
   def findAllRepos(): Iterable[Repo]
 
   def findRepo(repoID: RepoID): Option[Repo]
@@ -52,10 +48,6 @@ trait Repository {
 
 object Repository {
   var repository: Repository = new SQLRepository()
-
-  def findAuthor(authorID: AuthorID): Option[Author] = repository.findAuthor(authorID)
-
-  def findAuthorOnName(name: String): Option[Author] = repository.findAuthorOnName(name)
 
   def findAllRepos(): Iterable[Repo] = repository.findAllRepos()
 

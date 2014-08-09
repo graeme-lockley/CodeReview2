@@ -19,7 +19,7 @@ object Auth extends Controller {
 	def loggedOnUser(implicit request: RequestHeader): Option[Author] = {
 		val authorId = NumberUtils.toLong(request.session.get(Security.username).getOrElse("-1"), -1)
 
-		Repository.findAuthor(authorId)
+		Author.find(authorId)
 	}
 
 	def login() = Action {
@@ -31,7 +31,7 @@ object Auth extends Controller {
 			)
 			val user = loginForm.bindFromRequest().get
 
-			Repository.findAuthorOnName(user) match {
+			Author.findOnName(user) match {
 				case Some(author) =>
 					Redirect(routes.Repos.list)
 						.withSession(Security.username -> s"${author.id}")
