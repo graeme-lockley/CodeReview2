@@ -1,33 +1,17 @@
 package adaptors
 
+import java.sql.Timestamp
+import java.util.Date
+
 import models._
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Query
+import ports.DBRevisionEntryFeedbackStatus.DBRevisionEntryFeedbackStatus
 import ports._
+
 import scala.collection.mutable
-import scala.Some
-import java.util.Date
-import java.sql.Timestamp
-import DBRevisionEntryFeedbackStatus.DBRevisionEntryFeedbackStatus
 
 class SQLRepository extends Repository {
-    def findRepoAuthor(repoAuthorID: RepoAuthorID): Option[RepoAuthor] = inTransaction {
-        DBRepoAuthor.lookup(repoAuthorID) match {
-            case Some(dbRepoAuthor) => Some(convertDBRepoAuthorToRepoAuthor(dbRepoAuthor))
-            case None => None
-        }
-    }
-
-    def getRepoAuthor(repoAuthorID: RepoAuthorID): RepoAuthor = findRepoAuthor(repoAuthorID).get
-
-    private def convertDBRepoAuthorToRepoAuthor(dbRepoAuthor: DBRepoAuthor): RepoAuthor = {
-        val author = dbRepoAuthor.authorID match {
-            case Some(dbAuthorID) => Some(Author.get(dbAuthorID))
-            case None => None
-        }
-        RepoAuthor(dbRepoAuthor.id, getRepo(dbRepoAuthor.repoID), author, dbRepoAuthor.repoAuthorName)
-    }
-
     def findAllRepos(): Iterable[Repo] = inTransaction {
         DBRepo.all().map(convertDBRepoToRepo)
     }
@@ -132,7 +116,7 @@ class SQLRepository extends Repository {
     }
 
 	def repoAuthors(repo: Repo): Traversable[RepoAuthor] = inTransaction {
-		DBRepo.repoAuthors(repo.id).map(ra => convertDBRepoAuthorToRepoAuthor(ra))
+    DBRepo.repoAuthors(repo.id).map(ra => RepoAuthor.dbToModel(ra))
 	}
 
 	def entryRevisions(repo: Repo, path: String): Traversable[Revision] = {
@@ -167,7 +151,7 @@ class SQLRepository extends Repository {
             dbRevision.id,
             repo,
             dbRevision.revisionNumber,
-            if (dbRevision.repoAuthorID.isDefined) Some(getRepoAuthor(dbRevision.repoAuthorID.get)) else None,
+          if (dbRevision.repoAuthorID.isDefined) Some(RepoAuthor.get(dbRevision.repoAuthorID.get)) else None,
             dbRevision.date,
             dbRevision.logMessage,
             dbRevisionEntries.map(dbRevisionEntry => convertDBRevisionEntryToModel(repo, dbRevisionEntry))

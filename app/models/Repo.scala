@@ -39,5 +39,23 @@ object RepoAuthor {
     DBRepoAuthor.update(modelToDB(repoAuthor))
   }
 
+  def find(repoAuthorID: RepoAuthorID): Option[RepoAuthor] = inTransaction {
+    DBRepoAuthor.lookup(repoAuthorID) match {
+      case Some(dbRepoAuthor) => Some(dbToModel(dbRepoAuthor))
+      case None => None
+    }
+  }
+
+  def get(repoAuthorID: RepoAuthorID): RepoAuthor = find(repoAuthorID).get
+
+  def dbToModel(dbRepoAuthor: DBRepoAuthor): RepoAuthor = {
+    val author = dbRepoAuthor.authorID match {
+      case Some(dbAuthorID) => Some(Author.get(dbAuthorID))
+      case None => None
+    }
+    RepoAuthor(dbRepoAuthor.id, Repository.findRepo(dbRepoAuthor.repoID).get, author, dbRepoAuthor.repoAuthorName)
+  }
+
+
   def modelToDB(repoAuthor: RepoAuthor): DBRepoAuthor = DBRepoAuthor(repoAuthor.id, repoAuthor.repo.id, repoAuthor.author.map(x => x.id), repoAuthor.name)
 }
