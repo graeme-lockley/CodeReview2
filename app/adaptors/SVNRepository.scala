@@ -1,7 +1,8 @@
 package adaptors
 
 import models._
-import adaptors.DBResourceType.DBResourceType
+import ports._
+import DBResourceType.DBResourceType
 import org.squeryl.PrimitiveTypeMode._
 import org.tmatesoft.svn.core._
 import java.util

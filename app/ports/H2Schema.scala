@@ -1,14 +1,13 @@
-package adaptors
+package ports
 
 import java.sql.Timestamp
-import org.squeryl.KeyedEntity
+
 import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.Query
-import org.squeryl.Schema
-import adaptors.DBEntryType.DBEntryType
-import adaptors.DBResourceType.DBResourceType
-import adaptors.DBRevisionEntryFeedbackType.DBRevisionEntryFeedbackType
-import adaptors.DBRevisionEntryFeedbackStatus.DBRevisionEntryFeedbackStatus
+import org.squeryl.{KeyedEntity, Query, Schema}
+import ports.DBEntryType.DBEntryType
+import ports.DBResourceType.DBResourceType
+import ports.DBRevisionEntryFeedbackStatus.DBRevisionEntryFeedbackStatus
+import ports.DBRevisionEntryFeedbackType.DBRevisionEntryFeedbackType
 
 class DBRepo(val id: Long,
              val name: String,

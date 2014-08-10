@@ -1,7 +1,7 @@
 package models
 
 import org.squeryl.PrimitiveTypeMode._
-import adaptors.DBRepoAuthor
+import ports.DBRepoAuthor
 
 class Repo(val id: RepoID, val name: String, val credentials: RepoCredentials) {
 

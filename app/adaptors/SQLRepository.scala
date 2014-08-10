@@ -3,11 +3,12 @@ package adaptors
 import models._
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Query
+import ports._
 import scala.collection.mutable
 import scala.Some
 import java.util.Date
 import java.sql.Timestamp
-import adaptors.DBRevisionEntryFeedbackStatus.DBRevisionEntryFeedbackStatus
+import DBRevisionEntryFeedbackStatus.DBRevisionEntryFeedbackStatus
 
 class SQLRepository extends Repository {
     def findRepoAuthor(repoAuthorID: RepoAuthorID): Option[RepoAuthor] = inTransaction {

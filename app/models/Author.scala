@@ -1,7 +1,7 @@
 package models
 
-import adaptors.DBAuthor
 import org.squeryl.PrimitiveTypeMode._
+import ports.DBAuthor
 
 class Author(val id: AuthorID, val name: String, val emailAddress: Option[EmailAddress], val isAdmin: Boolean) {
   override def toString: String = (id, name, emailAddress).toString()
