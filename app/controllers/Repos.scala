@@ -1,32 +1,32 @@
 package controllers
 
+import models.Repo
 import play.api.mvc.{Action, Controller}
-import models.Repository
 
 object Repos extends Controller {
   def list = Action {
     implicit request =>
-      val repos = Repository.findAllRepos()
+      val repos = Repo.all()
 
       Ok(views.html.repos.list(repos))
   }
 
   def show(id: Long) = Action {
     implicit request =>
-      val repo = Repository.findRepo(id)
-      Ok(views.html.repos.show(repo.get))
+      val repo = Repo.get(id)
+      Ok(views.html.repos.show(repo))
   }
 
   def refresh(id: Long) = Action {
     implicit request =>
-      val repo = Repository.findRepo(id)
-      repo.get.refreshSVN()
-      Ok(views.html.repos.show(repo.get))
+      val repo = Repo.get(id)
+      repo.refreshSVN()
+      Ok(views.html.repos.show(repo))
   }
 
   def authors(id: Long) = Action {
     implicit request =>
-      val repo = Repository.findRepo(id).get
+      val repo = Repo.find(id).get
       Ok(repoAuthorWriter.write(repo.repoAuthors()))
   }
 }

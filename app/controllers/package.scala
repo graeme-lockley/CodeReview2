@@ -1,13 +1,8 @@
 import java.text.SimpleDateFormat
 import java.util.Date
-import models._
 
-import models.Issue
-import models.IssueResponse
-import play.api.libs.json._
-import play.api.libs.json.JsObject
-import play.api.libs.json.Json
-import play.api.libs.json.JsString
+import models.{Issue, IssueResponse, _}
+import play.api.libs.json.{JsObject, JsString, Json, _}
 
 package object controllers {
 	val revisionEntryWriter = new {
@@ -98,7 +93,7 @@ package object controllers {
 			}
 			RepoAuthor(
 				(json \ "id").as[Long],
-				Repository.findRepo((json \ "repoID").as[Long]).get,
+        Repo.get((json \ "repoID").as[Long]),
 				author,
 				(json \ "name").as[String])
 		}

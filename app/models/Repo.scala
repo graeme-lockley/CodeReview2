@@ -1,7 +1,7 @@
 package models
 
 import org.squeryl.PrimitiveTypeMode._
-import ports.DBRepoAuthor
+import ports.{DBRepo, DBRepoAuthor}
 
 class Repo(val id: RepoID, val name: String, val credentials: RepoCredentials) {
 
@@ -22,6 +22,21 @@ object NullRepo extends Repo(UNKNOWN_REPO_ID, "NullRepo", NullRepoCredentials) {
 
 object Repo {
   def apply(id: RepoID, name: String, credentials: RepoCredentials): Repo = new Repo(id, name, credentials)
+
+  def all(): Iterable[Repo] = inTransaction {
+    DBRepo.all().map(dbToModel)
+  }
+
+  def find(repoID: models.RepoID): Option[Repo] = inTransaction {
+    DBRepo.lookup(repoID) match {
+      case Some(dbRepo) => Some(dbToModel(dbRepo))
+      case None => None
+    }
+  }
+
+  def get(repoID: models.RepoID): Repo = find(repoID).get
+
+  private def dbToModel(dbRepo: DBRepo): Repo = Repo(dbRepo.id, dbRepo.name, RepoCredentials(dbRepo.svnUser, dbRepo.svnPassword, dbRepo.svnURL))
 }
 
 case class RepoCredentials(userName: String, password: String, url: String)
@@ -53,9 +68,8 @@ object RepoAuthor {
       case Some(dbAuthorID) => Some(Author.get(dbAuthorID))
       case None => None
     }
-    RepoAuthor(dbRepoAuthor.id, Repository.findRepo(dbRepoAuthor.repoID).get, author, dbRepoAuthor.repoAuthorName)
+    RepoAuthor(dbRepoAuthor.id, Repo.find(dbRepoAuthor.repoID).get, author, dbRepoAuthor.repoAuthorName)
   }
-
 
   def modelToDB(repoAuthor: RepoAuthor): DBRepoAuthor = DBRepoAuthor(repoAuthor.id, repoAuthor.repo.id, repoAuthor.author.map(x => x.id), repoAuthor.name)
 }

@@ -12,24 +12,9 @@ import ports._
 import scala.collection.mutable
 
 class SQLRepository extends Repository {
-    def findAllRepos(): Iterable[Repo] = inTransaction {
-        DBRepo.all().map(convertDBRepoToRepo)
-    }
-
-    def findRepo(repoID: models.RepoID): Option[Repo] = inTransaction {
-        DBRepo.lookup(repoID) match {
-            case Some(dbRepo) => Some(convertDBRepoToRepo(dbRepo))
-            case None => None
-        }
-    }
-
-    def getRepo(repoID: models.RepoID): Repo = findRepo(repoID).get
-
-    private def convertDBRepoToRepo(dbRepo: DBRepo): Repo = Repo(dbRepo.id, dbRepo.name, RepoCredentials(dbRepo.svnUser, dbRepo.svnPassword, dbRepo.svnURL))
-
-    def findRevision(revisionID: RevisionID): Option[Revision] = inTransaction {
+  def findRevision(revisionID: RevisionID): Option[Revision] = inTransaction {
         val dbRevision = DBRevision.get(revisionID)
-        findRepo(dbRevision.repoID) match {
+    Repo.find(dbRevision.repoID) match {
             case Some(repo) => Some(convertDBtoModel(repo, dbRevision, dbRevision.entries()))
             case None => None
         }
@@ -44,7 +29,7 @@ class SQLRepository extends Repository {
 
     def findRevisionEntry(revisionEntryID: models.RevisionEntryID): Option[RevisionEntry] = inTransaction {
         DBRevisionEntry.lookup(revisionEntryID) match {
-            case Some(dbRevisionEntry) => Some(convertDBRevisionEntryToModel(findRepo(dbRevisionEntry.repoID).get, dbRevisionEntry))
+          case Some(dbRevisionEntry) => Some(convertDBRevisionEntryToModel(Repo.find(dbRevisionEntry.repoID).get, dbRevisionEntry))
             case None => None
         }
     }
@@ -95,7 +80,7 @@ class SQLRepository extends Repository {
             case None =>
                 val dbRevisionEntry = DBRevisionEntry.get(revisionEntryID)
                 val dbRevision = DBRevision.get(dbRevisionEntry.revisionID)
-                val content = SVNRepository.getFileRevision(findRepo(dbRevision.repoID).get, dbRevisionEntry.path, dbRevision.revisionNumber.toInt)
+              val content = SVNRepository.getFileRevision(Repo.find(dbRevision.repoID).get, dbRevisionEntry.path, dbRevision.revisionNumber.toInt)
 
                 try {
                     Library.revisionEntriesContent.insert(new DBRevisionEntryContent(dbRevisionEntry.id, content))

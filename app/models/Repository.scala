@@ -5,10 +5,6 @@ import java.util.Date
 import adaptors.SQLRepository
 
 trait Repository {
-  def findAllRepos(): Iterable[Repo]
-
-  def findRepo(repoID: RepoID): Option[Repo]
-
   def findRevision(revisionID: RevisionID): Option[Revision]
 
   def findRevisionOnRevisionEntryID(revisionEntryID: RevisionEntryID): Option[Revision]
@@ -48,10 +44,6 @@ trait Repository {
 
 object Repository {
   var repository: Repository = new SQLRepository()
-
-  def findAllRepos(): Iterable[Repo] = repository.findAllRepos()
-
-  def findRepo(repoID: RepoID): Option[Repo] = repository.findRepo(repoID)
 
   def findRevision(revisionID: RevisionID): Option[Revision] = repository.findRevision(revisionID)
 
