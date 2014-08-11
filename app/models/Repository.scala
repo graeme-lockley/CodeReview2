@@ -5,8 +5,6 @@ import java.util.Date
 import adaptors.SQLRepository
 
 trait Repository {
-  def findCommentary(commentID: CommentID): Option[Commentary]
-
   def findIssue(issueID: IssueID): Option[Issue]
 
   def getFileRevision(revisionEntryID: RevisionEntryID): String
@@ -36,8 +34,6 @@ trait Repository {
 
 object Repository {
   var repository: Repository = new SQLRepository()
-
-  def findCommentary(commentID: CommentID): Option[Commentary] = repository.findCommentary(commentID)
 
   def findIssue(issueID: IssueID): Option[Issue] = repository.findIssue(issueID)
 

@@ -2,8 +2,9 @@ package models
 
 import java.util.Date
 
-import ports.DBRevisionEntryFeedbackStatus
+import org.squeryl.PrimitiveTypeMode._
 import ports.DBRevisionEntryFeedbackStatus._
+import ports.{DBRevisionEntryFeedbackStatus, DBRevisionEntryFeedbackType, Library}
 
 trait Feedback {
   val id: CommentID
@@ -25,6 +26,19 @@ case class Commentary(id: CommentID, comment: String, author: Author, date: Date
   }
 
   def responses(): Traversable[CommentaryResponse] = Repository.commentaryResponses(this)
+}
+
+object Commentary {
+  def find(commentID: CommentID): Option[Commentary] = inTransaction {
+    Library.revisionEntryComment.lookup(commentID) match {
+      case Some(comment) =>
+        if (comment.feedbackType == DBRevisionEntryFeedbackType.Commentary)
+          Some(Commentary(commentID, comment.logMessage, Author.get(comment.authorID), comment.date, RevisionEntry.get(comment.revisionEntryID), comment.lineNumber))
+        else
+          None
+      case None => None
+    }
+  }
 }
 
 trait IssueStatus

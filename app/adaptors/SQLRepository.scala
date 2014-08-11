@@ -11,17 +11,6 @@ import ports._
 import scala.collection.mutable
 
 class SQLRepository extends Repository {
-  def findCommentary(commentID: CommentID): Option[Commentary] = inTransaction {
-    Library.revisionEntryComment.lookup(commentID) match {
-      case Some(comment) =>
-        if (comment.feedbackType == DBRevisionEntryFeedbackType.Commentary)
-          Some(Commentary(commentID, comment.logMessage, Author.get(comment.authorID), comment.date, RevisionEntry.get(comment.revisionEntryID), comment.lineNumber))
-        else
-          None
-      case None => None
-    }
-  }
-
   def findIssue(issueID: IssueID): Option[Issue] = inTransaction {
     Library.revisionEntryComment.lookup(issueID) match {
       case Some(comment) =>
