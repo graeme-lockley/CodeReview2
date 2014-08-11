@@ -1,10 +1,11 @@
 package models
 
+import java.sql.Timestamp
 import java.util.Date
 
 import org.squeryl.PrimitiveTypeMode._
 import ports.DBRevisionEntryFeedbackStatus._
-import ports.{DBRevisionEntryFeedbackStatus, DBRevisionEntryFeedbackType, Library}
+import ports.{DBRevisionEntryFeedback, DBRevisionEntryFeedbackStatus, DBRevisionEntryFeedbackType, Library}
 
 trait Feedback {
   val id: CommentID
@@ -58,13 +59,42 @@ case class Issue(id: IssueID, comment: String, author: Author, date: Date, revis
     if (status == models.Closed()) Left("This issue has already been closed.")
     else if (author.id != closeAuthor.id) Left("Only the author who opened the issue may close the issue.")
     else {
-      val updatedIssue = Repository.updateIssue(copy(status = models.Closed()))
+      val updatedIssue = Issue.update(copy(status = models.Closed()))
       addResponse("Issue closed", closeAuthor)
       Right(updatedIssue)
     }
   }
 
   def responses(): Traversable[IssueResponse] = Repository.issueResponses(this)
+}
+
+object Issue {
+  def find(issueID: IssueID): Option[Issue] = inTransaction {
+    Library.revisionEntryComment.lookup(issueID) match {
+      case Some(comment) =>
+        if (comment.feedbackType == DBRevisionEntryFeedbackType.Issue)
+          Some(Issue(issueID, comment.logMessage, Author.get(comment.authorID), comment.date, RevisionEntry.get(comment.revisionEntryID), comment.lineNumber, Feedback.dbToModel(comment.status)))
+        else
+          None
+      case None => None
+    }
+  }
+
+  def create(revisionEntry: RevisionEntry, lineNumber: Option[LineNumberType], comment: String, author: Author, date: Date): Issue = inTransaction {
+    val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(UNKNOWN_REVISION_ENTRY_FEEDBACK_ID, None, author.id, revisionEntry.id, lineNumber, comment, new Timestamp(date.getTime), DBRevisionEntryFeedbackType.Issue, DBRevisionEntryFeedbackStatus.Open)
+    val insertDBRevisionEntryFeedback = Library.revisionEntryComment.insert(dbRevisionEntryFeedback)
+    Issue(insertDBRevisionEntryFeedback.id, comment, author, date, revisionEntry, lineNumber, models.Closed())
+  }
+
+  def update(issue: Issue): Issue = inTransaction {
+    val dbRevisionEntryFeedbackStatus = issue.status match {
+      case Open() => DBRevisionEntryFeedbackStatus.Open
+      case Closed() => DBRevisionEntryFeedbackStatus.Closed
+    }
+    val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(issue.id, None, issue.author.id, issue.revisionEntry.id, issue.lineNumber, issue.comment, new Timestamp(issue.date.getTime), DBRevisionEntryFeedbackType.Issue, dbRevisionEntryFeedbackStatus)
+    Library.revisionEntryComment.update(dbRevisionEntryFeedback)
+    issue
+  }
 }
 
 case class IssueResponse(id: IssueResponseID, comment: String, author: Author, date: Date, issue: Issue) extends Feedback

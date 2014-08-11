@@ -11,17 +11,6 @@ import ports._
 import scala.collection.mutable
 
 class SQLRepository extends Repository {
-  def findIssue(issueID: IssueID): Option[Issue] = inTransaction {
-    Library.revisionEntryComment.lookup(issueID) match {
-      case Some(comment) =>
-        if (comment.feedbackType == DBRevisionEntryFeedbackType.Issue)
-          Some(Issue(issueID, comment.logMessage, Author.get(comment.authorID), comment.date, RevisionEntry.get(comment.revisionEntryID), comment.lineNumber, Feedback.dbToModel(comment.status)))
-        else
-          None
-      case None => None
-    }
-  }
-
   def getFileRevision(revisionEntryID: RevisionEntryID): String = inTransaction {
     DBRevisionEntryContent.lookup(revisionEntryID) match {
       case Some(dbRevisionEntryContent) => dbRevisionEntryContent.content
@@ -104,22 +93,6 @@ class SQLRepository extends Repository {
     val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(UNKNOWN_REVISION_ENTRY_FEEDBACK_ID, Some(commentary.id), author.id, commentary.revisionEntry.id, commentary.lineNumber, comment, new Timestamp(date.getTime), DBRevisionEntryFeedbackType.CommentaryResponse, DBRevisionEntryFeedbackStatus.Closed)
     val insertDBRevisionEntryFeedback = Library.revisionEntryComment.insert(dbRevisionEntryFeedback)
     CommentaryResponse(insertDBRevisionEntryFeedback.id, comment, author, date, commentary)
-  }
-
-  def createIssue(revisionEntry: RevisionEntry, lineNumber: Option[LineNumberType], comment: String, author: Author, date: Date): Issue = inTransaction {
-    val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(UNKNOWN_REVISION_ENTRY_FEEDBACK_ID, None, author.id, revisionEntry.id, lineNumber, comment, new Timestamp(date.getTime), DBRevisionEntryFeedbackType.Issue, DBRevisionEntryFeedbackStatus.Open)
-    val insertDBRevisionEntryFeedback = Library.revisionEntryComment.insert(dbRevisionEntryFeedback)
-    Issue(insertDBRevisionEntryFeedback.id, comment, author, date, revisionEntry, lineNumber, Closed())
-  }
-
-  def updateIssue(issue: Issue): Issue = inTransaction {
-    val dbRevisionEntryFeedbackStatus = issue.status match {
-      case Open() => DBRevisionEntryFeedbackStatus.Open
-      case Closed() => DBRevisionEntryFeedbackStatus.Closed
-    }
-    val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(issue.id, None, issue.author.id, issue.revisionEntry.id, issue.lineNumber, issue.comment, new Timestamp(issue.date.getTime), DBRevisionEntryFeedbackType.Issue, dbRevisionEntryFeedbackStatus)
-    Library.revisionEntryComment.update(dbRevisionEntryFeedback)
-    issue
   }
 
   def createIssueResponse(issue: models.Issue, comment: String, author: models.Author, date: Date): models.IssueResponse = inTransaction {

@@ -81,7 +81,7 @@ sealed trait RevisionEntry {
 
   def addCommentary(lineNumber: Option[LineNumberType], comment: String, author: Author): Commentary = Repository.createCommentary(this, lineNumber, comment, author, new java.util.Date())
 
-  def addIssue(lineNumber: Option[LineNumberType], comment: String, author: Author): Issue = Repository.createIssue(this, lineNumber, comment, author, new java.util.Date())
+  def addIssue(lineNumber: Option[LineNumberType], comment: String, author: Author): Issue = Issue.create(this, lineNumber, comment, author, new java.util.Date())
 
   def feedback(): Traversable[Feedback] = RevisionEntry.feedback(this)
 }
