@@ -28,10 +28,6 @@ class SQLRepository extends Repository {
 
   def refreshVCS(repo: Repo): Unit = SVNRepository.refresh(repo)
 
-  def repoAuthors(repo: Repo): Traversable[RepoAuthor] = inTransaction {
-    DBRepo.repoAuthors(repo.id).map(ra => RepoAuthor.dbToModel(ra))
-  }
-
   def entryRevisions(repo: Repo, path: String): Traversable[Revision] = {
     inTransaction {
       val dbRepo = DBRepo.get(repo.id)

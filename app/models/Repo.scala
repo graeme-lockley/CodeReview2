@@ -14,7 +14,7 @@ class Repo(val id: RepoID, val name: String, val credentials: RepoCredentials) {
 
   def entryRevisions(path: String): Traversable[Revision] = Repository.entryRevisions(this, path)
 
-  def repoAuthors(): Traversable[RepoAuthor] = Repository.repoAuthors(this)
+  def repoAuthors(): Traversable[RepoAuthor] = RepoAuthor.all(this)
 }
 
 object NullRepo extends Repo(UNKNOWN_REPO_ID, "NullRepo", NullRepoCredentials) {
@@ -91,6 +91,10 @@ object RepoAuthor {
   }
 
   def get(repoAuthorID: RepoAuthorID): RepoAuthor = find(repoAuthorID).get
+
+  def all(repo: Repo): Traversable[RepoAuthor] = inTransaction {
+    DBRepo.repoAuthors(repo.id).map(ra => dbToModel(ra))
+  }
 
   def dbToModel(dbRepoAuthor: DBRepoAuthor): RepoAuthor = {
     val author = dbRepoAuthor.authorID match {
