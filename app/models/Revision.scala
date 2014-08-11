@@ -190,7 +190,7 @@ object Revision {
     }
   }
 
-  private def dbToModel(repo: Repo, dbRevision: DBRevision, dbRevisionEntries: Iterable[DBRevisionEntry]): Revision =
+  def dbToModel(repo: Repo, dbRevision: DBRevision, dbRevisionEntries: Iterable[DBRevisionEntry]): Revision =
     new Revision(
       dbRevision.id,
       repo,

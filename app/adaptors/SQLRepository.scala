@@ -5,10 +5,7 @@ import java.util.Date
 
 import models._
 import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.Query
 import ports._
-
-import scala.collection.mutable
 
 class SQLRepository extends Repository {
   def getFileRevision(revisionEntryID: RevisionEntryID): String = inTransaction {
@@ -31,12 +28,6 @@ class SQLRepository extends Repository {
 
   def refreshVCS(repo: Repo): Unit = SVNRepository.refresh(repo)
 
-  def repoRevisions(repo: Repo): Traversable[Revision] = inTransaction {
-    val dbRepo = DBRepo.get(repo.id)
-
-    convertToRevisions(repo, dbRepo.revisions())
-  }
-
   def repoAuthors(repo: Repo): Traversable[RepoAuthor] = inTransaction {
     DBRepo.repoAuthors(repo.id).map(ra => RepoAuthor.dbToModel(ra))
   }
@@ -44,28 +35,8 @@ class SQLRepository extends Repository {
   def entryRevisions(repo: Repo, path: String): Traversable[Revision] = {
     inTransaction {
       val dbRepo = DBRepo.get(repo.id)
-      convertToRevisions(repo, dbRepo.entryRevisions(path))
+      Repo.convertToRevisions(repo, dbRepo.entryRevisions(path))
     }
-  }
-
-  private def convertToRevisions(repo: Repo, dbQueryResult: Query[(DBRevision, DBRevisionEntry)]): Traversable[Revision] = {
-    val result = new mutable.HashMap[DBRevision, mutable.ListBuffer[DBRevisionEntry]]()
-    for ((x, y) <- dbQueryResult) {
-      val key = result.get(x)
-      if (key.isDefined) {
-        key.get += y
-      } else {
-        val value = new mutable.ListBuffer[DBRevisionEntry]()
-        value += y
-        result.put(x, value)
-      }
-    }
-
-    result.map(x => {
-      val dbRevision = x._1
-      val dbRevisionEntries = x._2
-      convertDBtoModel(repo, dbRevision, dbRevisionEntries)
-    })
   }
 
   private def convertDBtoModel(repo: Repo, dbRevision: DBRevision, dbRevisionEntries: Iterable[DBRevisionEntry]): Revision =

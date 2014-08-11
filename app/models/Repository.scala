@@ -9,8 +9,6 @@ trait Repository {
 
   def refreshVCS(repo: Repo): Unit
 
-  def repoRevisions(repo: Repo): Traversable[Revision]
-
   def repoAuthors(repo: Repo): Traversable[RepoAuthor]
 
   def entryRevisions(repo: Repo, path: String): Traversable[Revision]
@@ -32,8 +30,6 @@ object Repository {
   def getFileRevision(revisionEntryID: RevisionEntryID): String = repository.getFileRevision(revisionEntryID)
 
   def refreshVCS(repo: Repo): Unit = repository.refreshVCS(repo)
-
-  def repoRevisions(repo: Repo): Traversable[Revision] = repository.repoRevisions(repo)
 
   def repoAuthors(repo: Repo): Traversable[RepoAuthor] = repository.repoAuthors(repo)
 
