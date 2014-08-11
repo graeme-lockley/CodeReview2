@@ -5,8 +5,6 @@ import java.util.Date
 import adaptors.SQLRepository
 
 trait Repository {
-  def revisionEntryFeedback(entry: RevisionEntry): Traversable[Feedback]
-
   def findCommentary(commentID: CommentID): Option[Commentary]
 
   def findIssue(issueID: IssueID): Option[Issue]
@@ -38,8 +36,6 @@ trait Repository {
 
 object Repository {
   var repository: Repository = new SQLRepository()
-
-  def revisionEntryFeedback(entry: RevisionEntry): Traversable[Feedback] = repository.revisionEntryFeedback(entry)
 
   def findCommentary(commentID: CommentID): Option[Commentary] = repository.findCommentary(commentID)
 

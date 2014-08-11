@@ -3,7 +3,7 @@ package models
 import java.util.Date
 
 import org.squeryl.PrimitiveTypeMode._
-import ports.{DBEntryType, DBResourceType, DBRevision, DBRevisionEntry}
+import ports._
 
 sealed trait Entry {
   val repo: Repo
@@ -56,7 +56,6 @@ sealed trait RevisionEntry {
 
   def revision: Revision = Revision.findRevisionOnRevisionEntryID(id).get
 
-
   def previousRevisionEntry(): Option[RevisionEntry] = {
     def calcFromRevision(): Revision = {
       def _fromRevision(currentFromRevision: Revision, revisions: Traversable[Revision]): Revision = {
@@ -84,7 +83,7 @@ sealed trait RevisionEntry {
 
   def addIssue(lineNumber: Option[LineNumberType], comment: String, author: Author): Issue = Repository.createIssue(this, lineNumber, comment, author, new java.util.Date())
 
-  def feedback(): Traversable[Feedback] = Repository.revisionEntryFeedback(this)
+  def feedback(): Traversable[Feedback] = RevisionEntry.feedback(this)
 }
 
 object RevisionEntry {
@@ -96,6 +95,17 @@ object RevisionEntry {
   }
 
   def get(revisionEntryID: models.RevisionEntryID): RevisionEntry = find(revisionEntryID).get
+
+  def feedback(revisionEntry: RevisionEntry): Traversable[Feedback] = inTransaction {
+    DBRevisionEntryFeedback.directRevisionEntryFeedback(revisionEntry.id).map {
+      e =>
+        if (e.feedbackType == DBRevisionEntryFeedbackType.Commentary)
+          Commentary(e.id, e.logMessage, Author.get(e.authorID), e.date, revisionEntry, e.lineNumber)
+        else
+          Issue(e.id, e.logMessage, Author.get(e.authorID), e.date, revisionEntry, e.lineNumber, Feedback.dbToModel(e.status))
+    }
+  }
+
 
   def dbToModel(repo: Repo, dbRevisionEntry: DBRevisionEntry): RevisionEntry = {
     val entry = dbRevisionEntry.resourceType match {

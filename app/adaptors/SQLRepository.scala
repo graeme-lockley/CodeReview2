@@ -6,23 +6,11 @@ import java.util.Date
 import models._
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Query
-import ports.DBRevisionEntryFeedbackStatus.DBRevisionEntryFeedbackStatus
 import ports._
 
 import scala.collection.mutable
 
 class SQLRepository extends Repository {
-  def revisionEntryFeedback(revisionEntry: RevisionEntry): Traversable[Feedback] = inTransaction {
-    DBRevisionEntryFeedback.directRevisionEntryFeedback(revisionEntry.id).map {
-      e =>
-        if (e.feedbackType == DBRevisionEntryFeedbackType.Commentary)
-          Commentary(e.id, e.logMessage, Author.get(e.authorID), e.date, revisionEntry, e.lineNumber)
-        else
-          Issue(e.id, e.logMessage, Author.get(e.authorID), e.date, revisionEntry, e.lineNumber, convertDBRevisionEntryFeedbackType(e.status))
-    }
-  }
-
-
   def findCommentary(commentID: CommentID): Option[Commentary] = inTransaction {
     Library.revisionEntryComment.lookup(commentID) match {
       case Some(comment) =>
@@ -38,16 +26,11 @@ class SQLRepository extends Repository {
     Library.revisionEntryComment.lookup(issueID) match {
       case Some(comment) =>
         if (comment.feedbackType == DBRevisionEntryFeedbackType.Issue)
-          Some(Issue(issueID, comment.logMessage, Author.get(comment.authorID), comment.date, RevisionEntry.get(comment.revisionEntryID), comment.lineNumber, convertDBRevisionEntryFeedbackType(comment.status)))
+          Some(Issue(issueID, comment.logMessage, Author.get(comment.authorID), comment.date, RevisionEntry.get(comment.revisionEntryID), comment.lineNumber, Feedback.dbToModel(comment.status)))
         else
           None
       case None => None
     }
-  }
-
-  private def convertDBRevisionEntryFeedbackType(status: DBRevisionEntryFeedbackStatus): IssueStatus = status match {
-    case DBRevisionEntryFeedbackStatus.Open => Open()
-    case DBRevisionEntryFeedbackStatus.Closed => Closed()
   }
 
   def getFileRevision(revisionEntryID: RevisionEntryID): String = inTransaction {
