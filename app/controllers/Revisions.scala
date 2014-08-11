@@ -1,13 +1,13 @@
 package controllers
 
+import models.Revision
 import play.api.mvc.{Action, Controller}
-import models.Repository
 
 object Revisions extends Controller {
-    def show(revisionID: Long) = Action {
-        implicit request =>
-            val revision = Repository.findRevision(revisionID)
+  def show(revisionID: Long) = Action {
+    implicit request =>
+      val revision = Revision.find(revisionID).get
 
-            Ok(views.html.revisions.show(revision.get))
-    }
+      Ok(views.html.revisions.show(revision))
+  }
 }

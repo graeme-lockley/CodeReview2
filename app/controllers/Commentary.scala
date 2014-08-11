@@ -1,8 +1,9 @@
 package controllers
 
-import play.api.mvc.{Action, Controller}
-import models.{Author, Repository}
 import java.text.SimpleDateFormat
+
+import models.{Author, RevisionEntry}
+import play.api.mvc.{Action, Controller}
 
 object Commentary extends Controller {
     def create() = Action(parse.json) {
@@ -14,7 +15,7 @@ object Commentary extends Controller {
             val revisionEntryID = (jsValue \ "revisionEntryID").as[Long]
             val lineNumber = (jsValue \ "lineNumber").asOpt[Long]
 
-            val revisionEntry = Repository.findRevisionEntry(revisionEntryID).get
+          val revisionEntry = RevisionEntry.find(revisionEntryID).get
             val author = Author.find(authorID).get
             val commentary = revisionEntry.addCommentary(lineNumber, comment, author)
 

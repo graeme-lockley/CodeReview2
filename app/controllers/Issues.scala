@@ -1,8 +1,8 @@
 package controllers
 
-import play.api.mvc.{Action, Controller}
-import models.{Author, Repository}
+import models.{Author, Repository, RevisionEntry}
 import play.api.libs.json._
+import play.api.mvc.{Action, Controller}
 
 object Issues extends Controller {
     def create() = Action(parse.json) {
@@ -14,7 +14,7 @@ object Issues extends Controller {
             val revisionEntryID = (jsValue \ "revisionEntryID").as[Long]
             val lineNumber = (jsValue \ "lineNumber").asOpt[Long]
 
-            val revisionEntry = Repository.findRevisionEntry(revisionEntryID).get
+          val revisionEntry = RevisionEntry.find(revisionEntryID).get
             val author = Author.find(authorID).get
             val issue = revisionEntry.addIssue(lineNumber, comment, author)
 

@@ -5,12 +5,6 @@ import java.util.Date
 import adaptors.SQLRepository
 
 trait Repository {
-  def findRevision(revisionID: RevisionID): Option[Revision]
-
-  def findRevisionOnRevisionEntryID(revisionEntryID: RevisionEntryID): Option[Revision]
-
-  def findRevisionEntry(revisionEntryID: RevisionEntryID): Option[RevisionEntry]
-
   def revisionEntryFeedback(entry: RevisionEntry): Traversable[Feedback]
 
   def findCommentary(commentID: CommentID): Option[Commentary]
@@ -44,12 +38,6 @@ trait Repository {
 
 object Repository {
   var repository: Repository = new SQLRepository()
-
-  def findRevision(revisionID: RevisionID): Option[Revision] = repository.findRevision(revisionID)
-
-  def findRevisionOnRevisionEntryID(revisionEntryID: RevisionEntryID): Option[Revision] = repository.findRevisionOnRevisionEntryID(revisionEntryID)
-
-  def findRevisionEntry(revisionEntryID: RevisionEntryID): Option[RevisionEntry] = repository.findRevisionEntry(revisionEntryID)
 
   def revisionEntryFeedback(entry: RevisionEntry): Traversable[Feedback] = repository.revisionEntryFeedback(entry)
 

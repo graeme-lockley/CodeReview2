@@ -2,134 +2,192 @@ package models
 
 import java.util.Date
 
-sealed trait Entry {
-    val repo: Repo
-    val path: String
+import org.squeryl.PrimitiveTypeMode._
+import ports.{DBEntryType, DBResourceType, DBRevision, DBRevisionEntry}
 
-    def revisions(): Traversable[Revision] = Repository.entryRevisions(repo, path)
+sealed trait Entry {
+  val repo: Repo
+  val path: String
+
+  def revisions(): Traversable[Revision] = Repository.entryRevisions(repo, path)
 }
 
 object NullEntry extends Entry {
-    val repo: Repo = NullRepo
-    val path: String = "/"
+  val repo: Repo = NullRepo
+  val path: String = "/"
 }
 
 case class NoneEntry(repo: Repo, path: String) extends Entry {
-    override def toString: String = "None: " + path
+  override def toString: String = "None: " + path
 }
 
 case class FileEntry(repo: Repo, path: String) extends Entry {
-    override def toString: String = "File: " + path
+  override def toString: String = "File: " + path
 }
 
 case class DirEntry(repo: Repo, path: String) extends Entry {
-    override def toString: String = "Dir: " + path
+  override def toString: String = "Dir: " + path
 }
 
 case class UnknownEntry(repo: Repo, path: String) extends Entry {
-    override def toString: String = "Unknown: " + path
+  override def toString: String = "Unknown: " + path
 }
 
 object Entry {
-    def apply(repo: Repo, path: String): Entry = {
-        new UnknownEntry(repo, path)
-    }
+  def apply(repo: Repo, path: String): Entry = {
+    new UnknownEntry(repo, path)
+  }
 }
 
 sealed trait RevisionEntry {
-    val id: RevisionEntryID
-    val entry: Entry
+  val id: RevisionEntryID
+  val entry: Entry
 
-    def operation: String
+  def operation: String
 
-    override def toString: String = operation + ": (" + entry + ")"
+  override def toString: String = operation + ": (" + entry + ")"
 
-    def revisionNumber: RevisionNumber = {
-        Repository.findRevisionOnRevisionEntryID(id) match {
-            case Some(revision) => revision.revisionNumber
-            case None => UNKNOWN_REVISION_NUMBER
-        }
+  def revisionNumber: RevisionNumber = {
+    Revision.findRevisionOnRevisionEntryID(id) match {
+      case Some(revision) => revision.revisionNumber
+      case None => UNKNOWN_REVISION_NUMBER
     }
+  }
 
-    def revision: Revision = Repository.findRevisionOnRevisionEntryID(id).get
+  def revision: Revision = Revision.findRevisionOnRevisionEntryID(id).get
 
 
-    def previousRevisionEntry(): Option[RevisionEntry] = {
-        def calcFromRevision(): Revision = {
-            def _fromRevision(currentFromRevision: Revision, revisions: Traversable[Revision]): Revision = {
-                if (revisions.isEmpty)
-                    currentFromRevision
-                else {
-                    val r = revisions.head
-                    val rs = revisions.tail
+  def previousRevisionEntry(): Option[RevisionEntry] = {
+    def calcFromRevision(): Revision = {
+      def _fromRevision(currentFromRevision: Revision, revisions: Traversable[Revision]): Revision = {
+        if (revisions.isEmpty)
+          currentFromRevision
+        else {
+          val r = revisions.head
+          val rs = revisions.tail
 
-                    if (r.revisionNumber > currentFromRevision.revisionNumber && r.revisionNumber < revisionNumber)
-                        _fromRevision(r, rs)
-                    else
-                        _fromRevision(currentFromRevision, rs)
-                }
-            }
-            _fromRevision(Revision(), entry.revisions())
+          if (r.revisionNumber > currentFromRevision.revisionNumber && r.revisionNumber < revisionNumber)
+            _fromRevision(r, rs)
+          else
+            _fromRevision(currentFromRevision, rs)
         }
-        val fromRevision = calcFromRevision()
-        if (fromRevision.id == UNKNOWN_REVISION_ID) None else fromRevision.findRevisionEntry(entry)
+      }
+      _fromRevision(Revision(), entry.revisions())
     }
+    val fromRevision = calcFromRevision()
+    if (fromRevision.id == UNKNOWN_REVISION_ID) None else fromRevision.findRevisionEntry(entry)
+  }
 
-    def content(): String = Repository.getFileRevision(id)
+  def content(): String = Repository.getFileRevision(id)
 
-    def addCommentary(lineNumber: Option[LineNumberType], comment: String, author: Author): Commentary = Repository.createCommentary(this,lineNumber, comment, author, new java.util.Date())
-    def addIssue(lineNumber: Option[LineNumberType], comment: String, author: Author): Issue = Repository.createIssue(this,lineNumber, comment, author, new java.util.Date())
+  def addCommentary(lineNumber: Option[LineNumberType], comment: String, author: Author): Commentary = Repository.createCommentary(this, lineNumber, comment, author, new java.util.Date())
 
-    def feedback(): Traversable[Feedback] = Repository.revisionEntryFeedback(this)
+  def addIssue(lineNumber: Option[LineNumberType], comment: String, author: Author): Issue = Repository.createIssue(this, lineNumber, comment, author, new java.util.Date())
+
+  def feedback(): Traversable[Feedback] = Repository.revisionEntryFeedback(this)
+}
+
+object RevisionEntry {
+  def find(revisionEntryID: models.RevisionEntryID): Option[RevisionEntry] = inTransaction {
+    DBRevisionEntry.lookup(revisionEntryID) match {
+      case Some(dbRevisionEntry) => Some(RevisionEntry.dbToModel(Repo.find(dbRevisionEntry.repoID).get, dbRevisionEntry))
+      case None => None
+    }
+  }
+
+  def get(revisionEntryID: models.RevisionEntryID): RevisionEntry = find(revisionEntryID).get
+
+  def dbToModel(repo: Repo, dbRevisionEntry: DBRevisionEntry): RevisionEntry = {
+    val entry = dbRevisionEntry.resourceType match {
+      case DBResourceType.NoneResource => new NoneEntry(repo, dbRevisionEntry.path)
+      case DBResourceType.FileResource => new FileEntry(repo, dbRevisionEntry.path)
+      case DBResourceType.DirResource => new DirEntry(repo, dbRevisionEntry.path)
+      case DBResourceType.UnknownResource => new UnknownEntry(repo, dbRevisionEntry.path)
+    }
+    dbRevisionEntry.entryType match {
+      case DBEntryType.AddEntry => new AddEntry(dbRevisionEntry.id, entry)
+      case DBEntryType.DeleteEntry => new DeleteEntry(dbRevisionEntry.id, entry)
+      case DBEntryType.ModifyEntry => new ModifiedEntry(dbRevisionEntry.id, entry)
+      case DBEntryType.ReplaceEntry => new ReplacedEntry(dbRevisionEntry.id, entry, dbRevisionEntry.copyPath.get, dbRevisionEntry.copyRevision.get)
+    }
+  }
 }
 
 case class AddEntry(id: RevisionEntryID, entry: Entry) extends RevisionEntry {
-    def operation = "Add"
+  def operation = "Add"
 }
 
 case class DeleteEntry(id: RevisionEntryID, entry: Entry) extends RevisionEntry {
-    def operation = "Delete"
+  def operation = "Delete"
 }
 
 case class ModifiedEntry(id: RevisionEntryID, entry: Entry) extends RevisionEntry {
-    def operation = "Modify"
+  def operation = "Modify"
 }
 
 case class ReplacedEntry(id: RevisionEntryID, entry: Entry, copyPath: String, copyRevision: RevisionNumber) extends RevisionEntry {
-    def operation = "Replace"
+  def operation = "Replace"
 
-    override def toString: String = operation + ": (" + entry + ", " + copyPath + ", " + copyRevision + ")"
+  override def toString: String = operation + ": (" + entry + ", " + copyPath + ", " + copyRevision + ")"
 }
 
 object NullRevisionEntry extends RevisionEntry {
-    val id: RevisionEntryID = UNKNOWN_REVISION_ENTRY_ID
-    val entry: Entry = NullEntry
+  val id: RevisionEntryID = UNKNOWN_REVISION_ENTRY_ID
+  val entry: Entry = NullEntry
 
-    def operation = "Unknown"
+  def operation = "Unknown"
 
-    override def revisionNumber = -1
+  override def revisionNumber = -1
 
-    override def previousRevisionEntry(): Option[RevisionEntry] = None
+  override def previousRevisionEntry(): Option[RevisionEntry] = None
 
-    override def content() = ""
+  override def content() = ""
 }
 
 class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionNumber, val repoAuthor: Option[RepoAuthor], val date: Date, val logMessage: String, val revisionEntries: Traversable[RevisionEntry]) {
-    def findRevisionEntry(entry: Entry): Option[RevisionEntry] = {
-        revisionEntries.find(p => p.entry.path == entry.path)
-    }
+  def findRevisionEntry(entry: Entry): Option[RevisionEntry] = {
+    revisionEntries.find(p => p.entry.path == entry.path)
+  }
 
-    override def toString: String = {
-        (id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries).toString()
-    }
+  override def toString: String = {
+    (id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries).toString()
+  }
 }
 
 object Revision {
-    def apply(id: RevisionID, repo: Repo, revisionNumber: RevisionNumber, repoAuthor: Option[RepoAuthor], timestamp: Date, logMessage: String, revisionEntries: Traversable[RevisionEntry]): Revision = {
-        new Revision(id, repo, revisionNumber, repoAuthor, timestamp, logMessage, revisionEntries)
-    }
+  def apply(id: RevisionID, repo: Repo, revisionNumber: RevisionNumber, repoAuthor: Option[RepoAuthor], timestamp: Date, logMessage: String, revisionEntries: Traversable[RevisionEntry]): Revision = {
+    new Revision(id, repo, revisionNumber, repoAuthor, timestamp, logMessage, revisionEntries)
+  }
 
-    def apply(): Revision = {
-        new Revision(UNKNOWN_REVISION_ID, null, UNKNOWN_REVISION_NUMBER, None, null, null, null)
+  def apply(): Revision = {
+    new Revision(UNKNOWN_REVISION_ID, null, UNKNOWN_REVISION_NUMBER, None, null, null, null)
+  }
+
+  def find(revisionID: RevisionID): Option[Revision] = inTransaction {
+    val dbRevision = DBRevision.get(revisionID)
+    Repo.find(dbRevision.repoID) match {
+      case Some(repo) => Some(dbToModel(repo, dbRevision, dbRevision.entries()))
+      case None => None
     }
+  }
+
+  def get(revisionID: RevisionID): Revision = find(revisionID).get
+
+  def findRevisionOnRevisionEntryID(revisionEntryID: RevisionEntryID): Option[Revision] = inTransaction {
+    DBRevisionEntry.lookup(revisionEntryID) match {
+      case Some(dbRevisionEntry) => find(dbRevisionEntry.revisionID)
+      case None => None
+    }
+  }
+
+  private def dbToModel(repo: Repo, dbRevision: DBRevision, dbRevisionEntries: Iterable[DBRevisionEntry]): Revision =
+    new Revision(
+      dbRevision.id,
+      repo,
+      dbRevision.revisionNumber,
+      if (dbRevision.repoAuthorID.isDefined) Some(RepoAuthor.get(dbRevision.repoAuthorID.get)) else None,
+      dbRevision.date,
+      dbRevision.logMessage,
+      dbRevisionEntries.map(dbRevisionEntry => RevisionEntry.dbToModel(repo, dbRevisionEntry))
+    )
 }
