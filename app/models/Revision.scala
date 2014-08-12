@@ -9,7 +9,7 @@ sealed trait Entry {
   val repo: Repo
   val path: String
 
-  def revisions(): Traversable[Revision] = Repository.entryRevisions(repo, path)
+  def revisions(): Traversable[Revision] = Entry.entryRevisions(repo, path)
 }
 
 object NullEntry extends Entry {
@@ -36,6 +36,13 @@ case class UnknownEntry(repo: Repo, path: String) extends Entry {
 object Entry {
   def apply(repo: Repo, path: String): Entry = {
     new UnknownEntry(repo, path)
+  }
+
+  def entryRevisions(repo: Repo, path: String): Traversable[Revision] = {
+    inTransaction {
+      val dbRepo = DBRepo.get(repo.id)
+      Repo.convertToRevisions(repo, dbRepo.entryRevisions(path))
+    }
   }
 }
 
@@ -79,7 +86,7 @@ sealed trait RevisionEntry {
 
   def content(): String = Repository.getFileRevision(id)
 
-  def addCommentary(lineNumber: Option[LineNumberType], comment: String, author: Author): Commentary = Repository.createCommentary(this, lineNumber, comment, author, new java.util.Date())
+  def addCommentary(lineNumber: Option[LineNumberType], comment: String, author: Author): Commentary = Commentary.create(this, lineNumber, comment, author, new java.util.Date())
 
   def addIssue(lineNumber: Option[LineNumberType], comment: String, author: Author): Issue = Issue.create(this, lineNumber, comment, author, new java.util.Date())
 

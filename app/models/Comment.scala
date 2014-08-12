@@ -23,13 +23,19 @@ object Feedback {
 
 case class Commentary(id: CommentID, comment: String, author: Author, date: Date, revisionEntry: RevisionEntry, lineNumber: Option[LineNumberType]) extends Feedback {
   def addResponse(comment: String, author: Author): CommentaryResponse = {
-    Repository.createCommentaryResponse(this, comment, author, new java.util.Date())
+    CommentaryResponse.create(this, comment, author, new java.util.Date())
   }
 
-  def responses(): Traversable[CommentaryResponse] = Repository.commentaryResponses(this)
+  def responses(): Traversable[CommentaryResponse] = CommentaryResponse.all(this)
 }
 
 object Commentary {
+  def create(revisionEntry: RevisionEntry, lineNumber: Option[LineNumberType], comment: String, author: Author, date: Date): Commentary = inTransaction {
+    val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(UNKNOWN_REVISION_ENTRY_FEEDBACK_ID, None, author.id, revisionEntry.id, lineNumber, comment, new Timestamp(date.getTime), DBRevisionEntryFeedbackType.Commentary, DBRevisionEntryFeedbackStatus.Closed)
+    val insertDBRevisionEntryFeedback = Library.revisionEntryComment.insert(dbRevisionEntryFeedback)
+    Commentary(insertDBRevisionEntryFeedback.id, comment, author, date, revisionEntry, lineNumber)
+  }
+
   def find(commentID: CommentID): Option[Commentary] = inTransaction {
     Library.revisionEntryComment.lookup(commentID) match {
       case Some(comment) =>
@@ -50,9 +56,21 @@ case class Closed() extends IssueStatus
 
 case class CommentaryResponse(id: CommentResponseID, comment: String, author: Author, date: Date, commentary: Commentary) extends Feedback
 
+object CommentaryResponse {
+  def create(commentary: models.Commentary, comment: String, author: models.Author, date: Date): models.CommentaryResponse = inTransaction {
+    val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(UNKNOWN_REVISION_ENTRY_FEEDBACK_ID, Some(commentary.id), author.id, commentary.revisionEntry.id, commentary.lineNumber, comment, new Timestamp(date.getTime), DBRevisionEntryFeedbackType.CommentaryResponse, DBRevisionEntryFeedbackStatus.Closed)
+    val insertDBRevisionEntryFeedback = Library.revisionEntryComment.insert(dbRevisionEntryFeedback)
+    CommentaryResponse(insertDBRevisionEntryFeedback.id, comment, author, date, commentary)
+  }
+
+  def all(commentary: Commentary): Traversable[CommentaryResponse] = inTransaction {
+    DBRevisionEntryFeedback.childrenByDate(commentary.id).map(e => CommentaryResponse(e.id, e.logMessage, Author.get(e.authorID), e.date, commentary))
+  }
+}
+
 case class Issue(id: IssueID, comment: String, author: Author, date: Date, revisionEntry: RevisionEntry, lineNumber: Option[LineNumberType], status: IssueStatus) extends Feedback {
   def addResponse(comment: String, author: Author): IssueResponse = {
-    Repository.createIssueResponse(this, comment, author, new java.util.Date())
+    IssueResponse.create(this, comment, author, new java.util.Date())
   }
 
   def close(closeAuthor: Author): Either[String, Issue] = {
@@ -65,7 +83,7 @@ case class Issue(id: IssueID, comment: String, author: Author, date: Date, revis
     }
   }
 
-  def responses(): Traversable[IssueResponse] = Repository.issueResponses(this)
+  def responses(): Traversable[IssueResponse] = IssueResponse.all(this)
 }
 
 object Issue {
@@ -98,3 +116,15 @@ object Issue {
 }
 
 case class IssueResponse(id: IssueResponseID, comment: String, author: Author, date: Date, issue: Issue) extends Feedback
+
+object IssueResponse {
+  def create(issue: models.Issue, comment: String, author: models.Author, date: Date): models.IssueResponse = inTransaction {
+    val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(UNKNOWN_REVISION_ENTRY_FEEDBACK_ID, Some(issue.id), author.id, issue.revisionEntry.id, issue.lineNumber, comment, new Timestamp(date.getTime), DBRevisionEntryFeedbackType.IssueResponse, DBRevisionEntryFeedbackStatus.Closed)
+    val insertDBRevisionEntryFeedback = Library.revisionEntryComment.insert(dbRevisionEntryFeedback)
+    IssueResponse(insertDBRevisionEntryFeedback.id, comment, author, date, issue)
+  }
+
+  def all(issue: Issue): Traversable[IssueResponse] = inTransaction {
+    DBRevisionEntryFeedback.childrenByDate(issue.id).map(e => IssueResponse(e.id, e.logMessage, Author.get(e.authorID), e.date, issue))
+  }
+}

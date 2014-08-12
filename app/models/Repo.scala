@@ -12,7 +12,7 @@ class Repo(val id: RepoID, val name: String, val credentials: RepoCredentials) {
 
   def revisions(): Traversable[Revision] = Repo.revisions(this)
 
-  def entryRevisions(path: String): Traversable[Revision] = Repository.entryRevisions(this, path)
+  def entryRevisions(path: String): Traversable[Revision] = Entry.entryRevisions(this, path)
 
   def repoAuthors(): Traversable[RepoAuthor] = RepoAuthor.all(this)
 }
