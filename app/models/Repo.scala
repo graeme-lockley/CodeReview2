@@ -1,5 +1,6 @@
 package models
 
+import adaptors.SVNRepository
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Query
 import ports.{DBRepo, DBRepoAuthor, DBRevision, DBRevisionEntry}
@@ -8,7 +9,7 @@ import scala.collection.mutable
 
 class Repo(val id: RepoID, val name: String, val credentials: RepoCredentials) {
 
-  def refreshSVN() = Repository.refreshVCS(this)
+  def refreshSVN() = SVNRepository.refresh(this)
 
   def revisions(): Traversable[Revision] = Repo.revisions(this)
 

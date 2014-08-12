@@ -2,6 +2,7 @@ package models
 
 import java.util.Date
 
+import adaptors.SVNRepository
 import org.squeryl.PrimitiveTypeMode._
 import ports._
 
@@ -84,7 +85,7 @@ sealed trait RevisionEntry {
     if (fromRevision.id == UNKNOWN_REVISION_ID) None else fromRevision.findRevisionEntry(entry)
   }
 
-  def content(): String = Repository.getFileRevision(id)
+  def content(): String = RevisionEntry.content(id)
 
   def addCommentary(lineNumber: Option[LineNumberType], comment: String, author: Author): Commentary = Commentary.create(this, lineNumber, comment, author, new java.util.Date())
 
@@ -113,7 +114,6 @@ object RevisionEntry {
     }
   }
 
-
   def dbToModel(repo: Repo, dbRevisionEntry: DBRevisionEntry): RevisionEntry = {
     val entry = dbRevisionEntry.resourceType match {
       case DBResourceType.NoneResource => new NoneEntry(repo, dbRevisionEntry.path)
@@ -126,6 +126,24 @@ object RevisionEntry {
       case DBEntryType.DeleteEntry => new DeleteEntry(dbRevisionEntry.id, entry)
       case DBEntryType.ModifyEntry => new ModifiedEntry(dbRevisionEntry.id, entry)
       case DBEntryType.ReplaceEntry => new ReplacedEntry(dbRevisionEntry.id, entry, dbRevisionEntry.copyPath.get, dbRevisionEntry.copyRevision.get)
+    }
+  }
+
+  def content(revisionEntryID: RevisionEntryID): String = inTransaction {
+    DBRevisionEntryContent.lookup(revisionEntryID) match {
+      case Some(dbRevisionEntryContent) => dbRevisionEntryContent.content
+      case None =>
+        val dbRevisionEntry = DBRevisionEntry.get(revisionEntryID)
+        val dbRevision = DBRevision.get(dbRevisionEntry.revisionID)
+        val content = SVNRepository.getFileRevision(Repo.find(dbRevision.repoID).get, dbRevisionEntry.path, dbRevision.revisionNumber.toInt)
+
+        try {
+          Library.revisionEntriesContent.insert(new DBRevisionEntryContent(dbRevisionEntry.id, content))
+        } catch {
+          case _: Exception => ()
+        }
+
+        content
     }
   }
 }
