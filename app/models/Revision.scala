@@ -179,7 +179,27 @@ object NullRevisionEntry extends RevisionEntry {
   override def content() = ""
 }
 
-class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionNumber, val repoAuthor: Option[RepoAuthor], val date: Date, val logMessage: String, val revisionEntries: Traversable[RevisionEntry]) {
+trait Review {
+}
+
+object Review {
+  def apply(dbRevision: DBRevision): Review = dbRevision.status match {
+    case DBReviewStatus.Complete => CompletedReview(Author.get(dbRevision.reviewAuthorID.get))
+    case DBReviewStatus.InProgress => ReviewInProgress(Author.get(dbRevision.reviewAuthorID.get))
+    case DBReviewStatus.Outstanding => ReviewOutstanding()
+  }
+}
+
+case class ReviewOutstanding() extends Review {
+}
+
+case class ReviewInProgress(author: Author) extends Review {
+}
+
+case class CompletedReview(author: Author) extends Review {
+}
+
+class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionNumber, val repoAuthor: Option[RepoAuthor], val date: Date, val logMessage: String, val revisionEntries: Traversable[RevisionEntry], val review: Review) {
   def findRevisionEntry(entry: Entry): Option[RevisionEntry] = {
     revisionEntries.find(p => p.entry.path == entry.path)
   }
@@ -190,12 +210,12 @@ class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionN
 }
 
 object Revision {
-  def apply(id: RevisionID, repo: Repo, revisionNumber: RevisionNumber, repoAuthor: Option[RepoAuthor], timestamp: Date, logMessage: String, revisionEntries: Traversable[RevisionEntry]): Revision = {
-    new Revision(id, repo, revisionNumber, repoAuthor, timestamp, logMessage, revisionEntries)
+  def apply(id: RevisionID, repo: Repo, revisionNumber: RevisionNumber, repoAuthor: Option[RepoAuthor], timestamp: Date, logMessage: String, revisionEntries: Traversable[RevisionEntry], review: Review): Revision = {
+    new Revision(id, repo, revisionNumber, repoAuthor, timestamp, logMessage, revisionEntries, review)
   }
 
   def apply(): Revision = {
-    new Revision(UNKNOWN_REVISION_ID, null, UNKNOWN_REVISION_NUMBER, None, null, null, null)
+    new Revision(UNKNOWN_REVISION_ID, null, UNKNOWN_REVISION_NUMBER, None, null, null, null, ReviewOutstanding())
   }
 
   def find(revisionID: RevisionID): Option[Revision] = inTransaction {
@@ -223,6 +243,7 @@ object Revision {
       if (dbRevision.repoAuthorID.isDefined) Some(RepoAuthor.get(dbRevision.repoAuthorID.get)) else None,
       dbRevision.date,
       dbRevision.logMessage,
-      dbRevisionEntries.map(dbRevisionEntry => RevisionEntry.dbToModel(repo, dbRevisionEntry))
+      dbRevisionEntries.map(dbRevisionEntry => RevisionEntry.dbToModel(repo, dbRevisionEntry)),
+      Review(dbRevision)
     )
 }
