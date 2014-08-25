@@ -1,5 +1,12 @@
 package models
 
+import java.sql.Timestamp
+import java.util.Date
+
+import org.squeryl.PrimitiveTypeMode._
+import ports.DBRevisionEntryFeedbackStatus.DBRevisionEntryFeedbackStatus
+import ports.{DBRevisionEntryFeedback, DBRevisionEntryFeedbackStatus, DBRevisionEntryFeedbackType, Library}
+
 trait Feedback {
   val id: CommentID
   val comment: String
