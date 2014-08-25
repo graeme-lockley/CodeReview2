@@ -183,7 +183,7 @@ trait Review {
 }
 
 object Review {
-  def apply(dbRevision: DBRevision): Review = dbRevision.status match {
+  def apply(dbRevision: DBRevision): Review = dbRevision.reviewStatus match {
     case DBReviewStatus.Complete => CompletedReview(Author.get(dbRevision.reviewAuthorID.get))
     case DBReviewStatus.InProgress => ReviewInProgress(Author.get(dbRevision.reviewAuthorID.get))
     case DBReviewStatus.Outstanding => ReviewOutstanding()

@@ -117,7 +117,7 @@ class DBRevision(val id: Long,
                  val repoAuthorID: Option[Long],
                  val date: Timestamp,
                  val logMessage: String,
-                 val status: DBReviewStatus,
+                 val reviewStatus: DBReviewStatus,
                  val reviewAuthorID: Option[Long]) extends KeyedEntity[Long] {
   def this() = this(0, 0, 0, None, new Timestamp(java.lang.System.currentTimeMillis()), "", DBReviewStatus.Outstanding, None)
 
