@@ -191,12 +191,15 @@ object Review {
 }
 
 case class ReviewOutstanding() extends Review {
+  override def toString = "Outstanding"
 }
 
 case class ReviewInProgress(author: Author) extends Review {
+  override def toString = "In progress"
 }
 
 case class CompletedReview(author: Author) extends Review {
+  override def toString = "Completed"
 }
 
 class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionNumber, val repoAuthor: Option[RepoAuthor], val date: Date, val logMessage: String, val revisionEntries: Traversable[RevisionEntry], val review: Review) {
