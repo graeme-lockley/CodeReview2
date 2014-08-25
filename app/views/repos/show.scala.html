@@ -13,6 +13,7 @@
                 <th>Date</th>
                 <th>Message</th>
                 <th>Number of Entries</th>
+                <th>Review</th>
             </tr>
         </thead>
         <tbody>
@@ -23,6 +24,7 @@
                 <td> @revision.date </td>
                 <td> @revision.logMessage </td>
                 <td> <a href="@routes.Revisions.show(revision.id)"><span class="badge">@revision.revisionEntries.size</span></a> </td>
+                <td> @revision.review </td>
             </tr>
         }
         </tbody>
