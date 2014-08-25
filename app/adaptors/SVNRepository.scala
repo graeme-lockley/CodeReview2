@@ -1,23 +1,16 @@
 package adaptors
 
-import models._
-import ports._
-import DBResourceType.DBResourceType
+import java.io.ByteArrayOutputStream
+import java.util
+
+import models.{AddEntry, DeleteEntry, DirEntry, FileEntry, ModifiedEntry, NoneEntry, ReplacedEntry, UnknownEntry, _}
 import org.squeryl.PrimitiveTypeMode._
 import org.tmatesoft.svn.core._
-import java.util
-import java.io.ByteArrayOutputStream
 import org.tmatesoft.svn.core.io.{SVNRepository, SVNRepositoryFactory}
-import models.UnknownEntry
-import models.ReplacedEntry
-import models.ModifiedEntry
-import models.NoneEntry
-import models.DeleteEntry
-import scala.Some
-import models.DirEntry
-import models.FileEntry
-import models.AddEntry
 import org.tmatesoft.svn.core.wc.SVNWCUtil
+import ports.DBResourceType.DBResourceType
+import ports._
+
 import scala.collection.JavaConverters._
 
 object SVNRepository {
@@ -29,7 +22,7 @@ object SVNRepository {
                 case Some(author) => Some(DBRepoAuthor.getOrCreate(author.repo.id, author.name).id)
                 case None => None
             }
-            val dbRevision = new DBRevision(-1L, repoID, repoRevision.revisionNumber, dbRepoAuthorID, new java.sql.Timestamp(repoRevision.date.getTime), repoRevision.logMessage)
+          val dbRevision = DBRevision(repoID, repoRevision.revisionNumber, dbRepoAuthorID, repoRevision.date.getTime, repoRevision.logMessage)
 
             Library.revisions.insert(dbRevision)
 
