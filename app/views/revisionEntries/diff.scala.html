@@ -21,6 +21,11 @@ white-space : pre-wrap ;
 font-family : monospace ;
 margin : 0 ;
 }
+
+textarea.my-textarea {
+width : 100 % ;
+padding : 5 px ;
+}
 </style>
 
 <script type="template/underscore" id="initial_annotation">
@@ -58,8 +63,8 @@ margin : 0 ;
             <li class="list-group-item"><button type="button" class="btn btn-sm" name="RespondToCommentBTN"><span class="glyphicon glyphicon-comment"></span> Respond</button></li>
         <% } else { %>
             <li class="list-group-item" id="<%- feedbackItem.draftFeedbackOnComment.name() %>">
-                <textarea id="<%- feedbackItem.draftFeedbackOnComment.name() %>TXT"></textarea>
-                <button type="button" class="btn btn-default btn-sm" name="SaveDraftFeedbackOnCommentBTN"><span class="glyphicon glyphicon-comment"></span> Save</button>
+    <textarea id="<%- feedbackItem.draftFeedbackOnComment.name() %>TXT" class="my-textarea"></textarea>
+    <button type="button" class="btn btn-default btn-sm" name="SaveDraftFeedbackOnCommentBTN"><span class="glyphicon glyphicon-comment"></span> Save</button>
                 <button type="button" class="btn btn-sm" name="CancelDraftFeedbackOnCommentBTN"><span class="glyphicon glyphicon-comment"></span> Cancel</button>
             </li>
         <% } %>
@@ -90,8 +95,8 @@ margin : 0 ;
             </li>
         <% } else { %>
             <li class="list-group-item" id="<%- feedbackItem.draftFeedbackOnIssue.name() %>">
-                <textarea id="<%- feedbackItem.draftFeedbackOnIssue.name() %>TXT"></textarea>
-                <button type="button" class="btn btn-default btn-sm" name="SaveDraftFeedbackOnIssueBTN"><span class="glyphicon glyphicon-comment"></span> Save</button>
+    <textarea id="<%- feedbackItem.draftFeedbackOnIssue.name() %>TXT" class="my-textarea"></textarea>
+    <button type="button" class="btn btn-default btn-sm" name="SaveDraftFeedbackOnIssueBTN"><span class="glyphicon glyphicon-comment"></span> Save</button>
                 <button type="button" class="btn btn-sm" name="CancelDraftFeedbackOnIssueBTN"><span class="glyphicon glyphicon-comment"></span> Cancel</button>
             </li>
         <% } %>
@@ -101,8 +106,8 @@ margin : 0 ;
 <script type="template/underscore" id="show_commentarydraft">
     <ul class="list-group" id="<%- feedbackItem.name() %>">
         <li class="list-group-item">
-            <textarea id="<%- feedbackItem.name() %>TXT"></textarea>
-            <button type="button" class="btn btn-default btn-sm" name="SaveNewCommentBTN"><span class="glyphicon glyphicon-comment"></span> Save</button>
+        <textarea id="<%- feedbackItem.name() %>TXT" class="my-textarea"></textarea>
+        <button type="button" class="btn btn-default btn-sm" name="SaveNewCommentBTN"><span class="glyphicon glyphicon-comment"></span> Save</button>
             <button type="button" class="btn btn-sm" name="CancelNewCommentBTN"><span class="glyphicon glyphicon-comment"></span> Cancel</button>
         </li>
     </ul>
@@ -111,8 +116,8 @@ margin : 0 ;
 <script type="template/underscore" id="show_issuedraft">
     <ul class="list-group" id="<%- feedbackItem.name() %>">
         <li class="list-group-item">
-            <textarea id="<%- feedbackItem.name() %>TXT"></textarea>
-            <button type="button" class="btn btn-default btn-sm" name="SaveNewIssueBTN"><span class="glyphicon glyphicon-comment"></span> Save</button>
+        <textarea id="<%- feedbackItem.name() %>TXT" class="my-textarea"></textarea>
+        <button type="button" class="btn btn-default btn-sm" name="SaveNewIssueBTN"><span class="glyphicon glyphicon-comment"></span> Save</button>
             <button type="button" class="btn btn-sm" name="CancelNewIssueBTN"><span class="glyphicon glyphicon-comment"></span> Cancel</button>
         </li>
     </ul>
