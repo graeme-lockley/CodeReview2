@@ -1,12 +1,5 @@
 package models
 
-import java.sql.Timestamp
-import java.util.Date
-
-import org.squeryl.PrimitiveTypeMode._
-import ports.DBRevisionEntryFeedbackStatus._
-import ports.{DBRevisionEntryFeedback, DBRevisionEntryFeedbackStatus, DBRevisionEntryFeedbackType, Library}
-
 trait Feedback {
   val id: CommentID
   val comment: String
@@ -22,9 +15,7 @@ object Feedback {
 }
 
 case class Commentary(id: CommentID, comment: String, author: Author, date: Date, revisionEntry: RevisionEntry, lineNumber: Option[LineNumberType]) extends Feedback {
-  def addResponse(comment: String, author: Author): CommentaryResponse = {
-    CommentaryResponse.create(this, comment, author, new java.util.Date())
-  }
+  def addResponse(comment: String, author: Author): CommentaryResponse = CommentaryResponse.create(this, comment, author, new java.util.Date())
 
   def responses(): Traversable[CommentaryResponse] = CommentaryResponse.all(this)
 }
@@ -69,9 +60,7 @@ object CommentaryResponse {
 }
 
 case class Issue(id: IssueID, comment: String, author: Author, date: Date, revisionEntry: RevisionEntry, lineNumber: Option[LineNumberType], status: IssueStatus) extends Feedback {
-  def addResponse(comment: String, author: Author): IssueResponse = {
-    IssueResponse.create(this, comment, author, new java.util.Date())
-  }
+  def addResponse(comment: String, author: Author): IssueResponse = IssueResponse.create(this, comment, author, new java.util.Date())
 
   def close(closeAuthor: Author): Either[String, Issue] = {
     if (status == models.Closed()) Left("This issue has already been closed.")
