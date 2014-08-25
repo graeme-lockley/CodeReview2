@@ -184,7 +184,7 @@ trait Review {
 
 object Review {
   def apply(dbRevision: DBRevision): Review = dbRevision.reviewStatus match {
-    case DBReviewStatus.Complete => CompletedReview(Author.get(dbRevision.reviewAuthorID.get))
+    case DBReviewStatus.Complete => ReviewComplete(Author.get(dbRevision.reviewAuthorID.get))
     case DBReviewStatus.InProgress => ReviewInProgress(Author.get(dbRevision.reviewAuthorID.get))
     case DBReviewStatus.Outstanding => ReviewOutstanding()
   }
@@ -198,7 +198,7 @@ case class ReviewInProgress(author: Author) extends Review {
   override def toString = "In progress"
 }
 
-case class CompletedReview(author: Author) extends Review {
+case class ReviewComplete(author: Author) extends Review {
   override def toString = "Completed"
 }
 
