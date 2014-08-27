@@ -24,9 +24,7 @@ class DBRepo(val id: Long,
     calculateLargestRevisionNumber getOrElse -1
   }
 
-  def revisions(): Query[(DBRevision, DBRevisionEntry)] = {
-    Library.repoRevisions(id)
-  }
+  def revisions(): Query[(DBRevision, DBRevisionEntry)] = Library.repoRevisions(id)
 
   def entryRevisions(path: String): Query[(DBRevision, DBRevisionEntry)] = {
     from(Library.revisions, Library.revisionEntries)((r, re) =>
@@ -38,17 +36,13 @@ class DBRepo(val id: Long,
 }
 
 object DBRepo {
-  def all(): Query[DBRepo] = {
-    from(Library.repos)(w => select(w))
-  }
+  def all(): Query[DBRepo] = from(Library.repos)(w => select(w))
 
   def lookup(repoID: Long): Option[DBRepo] = {
     Library.repos.lookup(repoID)
   }
 
-  def get(repoID: Long): DBRepo = {
-    lookup(repoID).get
-  }
+  def get(repoID: Long): DBRepo = lookup(repoID).get
 
   def repoAuthors(repoID: models.RepoID): Traversable[DBRepoAuthor] = {
     from(Library.repoAuthors)(ra =>
@@ -81,8 +75,6 @@ class DBRepoAuthor(val id: Long,
                    val authorID: Option[Long],
                    val repoAuthorName: String) extends KeyedEntity[Long] {
   def this() = this(0, 0, None, "")
-
-  //    def author: DBAuthor = Library.authors.lookup(authorID).get
 }
 
 object DBRepoAuthor {
@@ -133,13 +125,14 @@ class DBRevision(val id: Long,
 object DBRevision {
   def apply(repoID: Long, revisionNumber: Long, repoAuthorID: Option[Long], time: Long, logMessage: String) = new DBRevision(-1L, repoID, revisionNumber, repoAuthorID, new java.sql.Timestamp(time), logMessage, DBReviewStatus.Outstanding, None)
 
-  def lookup(revisionID: Long): Option[DBRevision] = {
-    Library.revisions.lookup(revisionID)
-  }
+  def apply(id: Long, repoID: Long, revisionNumber: Long, repoAuthorID: Option[Long], time: Long, logMessage: String, reviewStatus: DBReviewStatus, reviewAuthorID: Option[Long]) =
+    new DBRevision(id, repoID, revisionNumber, repoAuthorID, new java.sql.Timestamp(time), logMessage, reviewStatus, reviewAuthorID)
 
-  def get(revisionID: Long): DBRevision = {
-    lookup(revisionID).get
-  }
+  def lookup(revisionID: Long): Option[DBRevision] = Library.revisions.lookup(revisionID)
+
+  def get(revisionID: Long): DBRevision = lookup(revisionID).get
+
+  def update(value: DBRevision) = Library.revisions.update(value)
 }
 
 object DBResourceType extends Enumeration {
@@ -170,13 +163,9 @@ class DBRevisionEntry(val id: Long,
 }
 
 object DBRevisionEntry {
-  def lookup(id: Long): Option[DBRevisionEntry] = {
-    Library.revisionEntries.lookup(id)
-  }
+  def lookup(id: Long): Option[DBRevisionEntry] = Library.revisionEntries.lookup(id)
 
-  def get(id: Long): DBRevisionEntry = {
-    lookup(id).get
-  }
+  def get(id: Long): DBRevisionEntry = lookup(id).get
 }
 
 class DBRevisionEntryContent(val id: Long,
@@ -185,9 +174,8 @@ class DBRevisionEntryContent(val id: Long,
 }
 
 object DBRevisionEntryContent {
-  def lookup(id: Long): Option[DBRevisionEntryContent] = {
+  def lookup(id: Long): Option[DBRevisionEntryContent] =
     from(Library.revisionEntriesContent)(rec => where(rec.id === id) select rec).headOption
-  }
 }
 
 object DBRevisionEntryFeedbackType extends Enumeration {
@@ -217,21 +205,18 @@ class DBRevisionEntryFeedback(val id: Long,
 }
 
 object DBRevisionEntryFeedback {
-  def childrenByDate(parentID: Long): Traversable[DBRevisionEntryFeedback] = {
+  def childrenByDate(parentID: Long): Traversable[DBRevisionEntryFeedback] =
     from(Library.revisionEntryComment)(re =>
-      where(re.parentID === parentID)
-        select re
+      where(re.parentID === parentID) select re
         orderBy re.date
     )
-  }
 
-  def directRevisionEntryFeedback(revisionEntryID: Long): Traversable[DBRevisionEntryFeedback] = {
+  def directRevisionEntryFeedback(revisionEntryID: Long): Traversable[DBRevisionEntryFeedback] =
     from(Library.revisionEntryComment)(re =>
       where((re.parentID isNull) and (re.revisionEntryID === revisionEntryID))
         select re
         orderBy re.date
     )
-  }
 }
 
 object Library extends Schema {

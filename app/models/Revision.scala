@@ -192,6 +192,7 @@ object Review {
 
 case class ReviewOutstanding() extends Review {
   override def toString = "Outstanding"
+
 }
 
 case class ReviewInProgress(author: Author) extends Review {
@@ -203,13 +204,47 @@ case class ReviewComplete(author: Author) extends Review {
 }
 
 class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionNumber, val repoAuthor: Option[RepoAuthor], val date: Date, val logMessage: String, val revisionEntries: Traversable[RevisionEntry], val review: Review) {
-  def findRevisionEntry(entry: Entry): Option[RevisionEntry] = {
-    revisionEntries.find(p => p.entry.path == entry.path)
+  def canComplete(maybeAuthor: Option[Author]): Boolean = maybeAuthor match {
+    case None => false
+    case Some(a) => review.isInstanceOf[ReviewInProgress] // && a.id == author.map(x => x.id).getOrElse(-1)
   }
 
-  override def toString: String = {
-    (id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries).toString()
+
+  def startReview(maybeAuthor: Option[Author]): Either[String, Revision] = maybeAuthor match {
+    case None => Left("No author has been passed")
+    case Some(a) =>
+      if (review.isInstanceOf[ReviewOutstanding])
+        if (a.id == author.map(x => x.id).getOrElse(-1))
+          Left("The author who checked in a revision may not review their check-in")
+        else
+          Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries, ReviewInProgress(a)))
+      else
+        Left("Unable to start a review that is not outstanding")
   }
+
+  def cancelReview(maybeAuthor: Option[Author]): Either[String, Revision] = maybeAuthor match {
+    case None => Left("No author has been passed")
+    case Some(a) =>
+      if (review.isInstanceOf[ReviewInProgress])
+        Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries, ReviewOutstanding()))
+      else
+        Left("Unable to cancel a review that is not in progress")
+  }
+
+  def canReview(maybeAuthor: Option[Author]): Boolean = maybeAuthor match {
+    case None => false
+    case Some(a) => review.isInstanceOf[ReviewOutstanding] && a.id != author.map(x => x.id).getOrElse(-1)
+  }
+
+  def findRevisionEntry(entry: Entry): Option[RevisionEntry] =
+    revisionEntries.find(p => p.entry.path == entry.path)
+
+  def author: Option[Author] = repoAuthor match {
+    case None => None
+    case Some(ra) => ra.author
+  }
+
+  override def toString: String = (id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries, review).toString()
 }
 
 object Revision {
@@ -217,9 +252,8 @@ object Revision {
     new Revision(id, repo, revisionNumber, repoAuthor, timestamp, logMessage, revisionEntries, review)
   }
 
-  def apply(): Revision = {
+  def apply(): Revision =
     new Revision(UNKNOWN_REVISION_ID, null, UNKNOWN_REVISION_NUMBER, None, null, null, null, ReviewOutstanding())
-  }
 
   def find(revisionID: RevisionID): Option[Revision] = inTransaction {
     val dbRevision = DBRevision.get(revisionID)
@@ -238,6 +272,12 @@ object Revision {
     }
   }
 
+  def save(revision: Revision) = inTransaction {
+    DBRevision.update(modelToDB(revision))
+    System.out.println(revision)
+    System.out.println(modelToDB(revision))
+  }
+
   def dbToModel(repo: Repo, dbRevision: DBRevision, dbRevisionEntries: Iterable[DBRevisionEntry]): Revision =
     new Revision(
       dbRevision.id,
@@ -249,4 +289,13 @@ object Revision {
       dbRevisionEntries.map(dbRevisionEntry => RevisionEntry.dbToModel(repo, dbRevisionEntry)),
       Review(dbRevision)
     )
+
+  private def modelToDB(revision: Revision): DBRevision = {
+    val (reviewStatus, reviewAuthor) = revision.review match {
+      case ReviewOutstanding() => (DBReviewStatus.Outstanding, None)
+      case ReviewInProgress(a) => (DBReviewStatus.InProgress, Some(a.id))
+      case ReviewComplete(a) => (DBReviewStatus.Complete, Some(a.id))
+    }
+    DBRevision(revision.id, revision.repo.id, revision.revisionNumber, revision.repoAuthor.map(x => x.id), revision.date.getTime, revision.logMessage, reviewStatus, reviewAuthor)
+  }
 }

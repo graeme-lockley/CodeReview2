@@ -7,19 +7,13 @@ import play.api.data._
 import play.api.mvc._
 
 
-object Auth extends Controller {
+object Auth extends AuthController {
   def user = Action {
     implicit request =>
       loggedOnUser match {
         case Some(author) => Ok(authorWriter.write(author))
         case None => Ok("{}")
       }
-  }
-
-  def loggedOnUser(implicit request: RequestHeader): Option[Author] = {
-    val authorId = NumberUtils.toLong(request.session.get(Security.username).getOrElse("-1"), -1)
-
-    Author.find(authorId)
   }
 
   def login() = Action {
@@ -50,5 +44,13 @@ object Auth extends Controller {
       Redirect(routes.Repos.list)
         .withSession()
         .flashing("info" -> s"You have successfully been logged out - cheerio ${if (author.isEmpty) "" else author.get.name}")
+  }
+}
+
+class AuthController extends Controller {
+  def loggedOnUser(implicit request: RequestHeader): Option[Author] = {
+    val authorId = NumberUtils.toLong(request.session.get(Security.username).getOrElse("-1"), -1)
+
+    Author.find(authorId)
   }
 }
