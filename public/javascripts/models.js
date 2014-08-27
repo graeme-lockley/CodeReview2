@@ -10,11 +10,8 @@ var Authors = Backbone.Collection.extend({
 });
 
 var Revisions = Backbone.Model.extend({
-    url: "/revisions"
+    urlRoot: "/revisions"
 });
-
-var authors = new Authors();
-var revisions = new Revisions();
 
 function setHtml(domElement, templateName, templateState) {
     var theTemplate = $("#" + templateName).html();
