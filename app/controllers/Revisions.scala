@@ -41,7 +41,7 @@ object Revisions extends AuthController {
 
   def completeReview(revisionID: Long) = Action {
     implicit request =>
-      Revision.find(revisionID).get.startReview(loggedOnUser) match {
+      Revision.find(revisionID).get.completeReview(loggedOnUser) match {
         case Left(l) => PreconditionFailed(l)
         case Right(r) =>
           Revision.save(r)

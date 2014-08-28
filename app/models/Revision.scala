@@ -204,36 +204,44 @@ case class ReviewComplete(author: Author) extends Review {
 }
 
 class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionNumber, val repoAuthor: Option[RepoAuthor], val date: Date, val logMessage: String, val revisionEntries: Traversable[RevisionEntry], val review: Review) {
-  def canComplete(maybeAuthor: Option[Author]): Boolean = maybeAuthor match {
-    case None => false
-    case Some(a) => review.isInstanceOf[ReviewInProgress] // && a.id == author.map(x => x.id).getOrElse(-1)
-  }
+  def canComplete(maybeAuthor: Option[Author]): Boolean = reviewPredicate(maybeAuthor, a => review.isInstanceOf[ReviewInProgress] && a.id == review.asInstanceOf[ReviewInProgress].author.id)
 
+  def canReview(maybeAuthor: Option[Author]): Boolean = reviewPredicate(maybeAuthor, a => review.isInstanceOf[ReviewOutstanding] && a.id != author.map(x => x.id).getOrElse(-1))
 
-  def startReview(maybeAuthor: Option[Author]): Either[String, Revision] = maybeAuthor match {
-    case None => Left("No author has been passed")
-    case Some(a) =>
-      if (review.isInstanceOf[ReviewOutstanding])
-        if (a.id == author.map(x => x.id).getOrElse(-1))
-          Left("The author who checked in a revision may not review their check-in")
+  def completeReview(maybeAuthor: Option[Author]): Either[String, Revision] = reviewAction(maybeAuthor, a =>
+    review match {
+      case progress: ReviewInProgress =>
+        if (a.id == progress.author.id)
+          Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries, ReviewComplete(a)))
         else
-          Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries, ReviewInProgress(a)))
-      else
-        Left("Unable to start a review that is not outstanding")
-  }
+          Left("Only the author who started a revision review may complete the review")
+      case _ => Left("Unable to complete a review that is not in progress")
+    })
 
-  def cancelReview(maybeAuthor: Option[Author]): Either[String, Revision] = maybeAuthor match {
-    case None => Left("No author has been passed")
-    case Some(a) =>
-      if (review.isInstanceOf[ReviewInProgress])
-        Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries, ReviewOutstanding()))
+  def startReview(maybeAuthor: Option[Author]): Either[String, Revision] = reviewAction(maybeAuthor, a =>
+    if (review.isInstanceOf[ReviewOutstanding])
+      if (a.id == author.map(x => x.id).getOrElse(-1))
+        Left("The author who checked in a revision may not review their check-in")
       else
-        Left("Unable to cancel a review that is not in progress")
-  }
+        Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries, ReviewInProgress(a)))
+    else
+      Left("Unable to start a review that is not outstanding"))
 
-  def canReview(maybeAuthor: Option[Author]): Boolean = maybeAuthor match {
+
+  def cancelReview(maybeAuthor: Option[Author]): Either[String, Revision] = reviewAction(maybeAuthor, a =>
+    if (review.isInstanceOf[ReviewInProgress])
+      Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries, ReviewOutstanding()))
+    else
+      Left("Unable to cancel a review that is not in progress"))
+
+  private def reviewPredicate(maybeAuthor: Option[Author], predicate: Author => Boolean): Boolean = maybeAuthor match {
     case None => false
-    case Some(a) => review.isInstanceOf[ReviewOutstanding] && a.id != author.map(x => x.id).getOrElse(-1)
+    case Some(a) => predicate(a)
+  }
+
+  private def reviewAction(maybeAuthor: Option[Author], action: Author => Either[String, Revision]): Either[String, Revision] = maybeAuthor match {
+    case None => Left("No author has been passed")
+    case Some(a) => action(a)
   }
 
   def findRevisionEntry(entry: Entry): Option[RevisionEntry] =
