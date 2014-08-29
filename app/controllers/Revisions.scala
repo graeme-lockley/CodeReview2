@@ -5,6 +5,11 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, RequestHeader, SimpleResult}
 
 object Revisions extends AuthController {
+  def list = Action {
+    implicit request =>
+      Ok()
+  }
+
   def showAsHTML(revisionID: Long) = Action {
     implicit request =>
       val revision = Revision.find(revisionID).get
