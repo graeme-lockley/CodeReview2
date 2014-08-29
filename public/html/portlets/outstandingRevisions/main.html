@@ -1,20 +1,13 @@
-<table>
-    <thead>
-    <tr>
-        <th>Repo</th>
-        <th>Date</th>
-        <th>Message</th>
-        <th>Author</th>
-    </tr>
-    </thead>
-    <tbody>
+<table class="table">
     <% revisions.forEach(function(revision) { %>
     <tr id="<%- prefix %>-<%- revision.id %>">
-    <td> <%- revision.get("repo").name %></td>
-        <td width="140px"> <%- revision.get("date") %></td>
-        <td><a href="#"><%- revision.get("logMessage") %></a></td>
-        <td> <%- revision.author() %></td>
+        <td>
+            <%- revision.get("repo").name %> <%- revision.get("date") %> <%- revision.author() %> <br>
+            <a href="#"><%- revision.get("logMessage") %></a>
+            <% if (revision.reviewInProgress()) { %>
+            <br> Reviewer: <%- revision.reviewAuthor().get("name") %>
+            <% } %>
+        </td>
     </tr>
     <% }); %>
-    </tbody>
 </table>
