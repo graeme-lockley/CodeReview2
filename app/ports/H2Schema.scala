@@ -112,14 +112,6 @@ class DBRevision(val id: Long,
                  val reviewStatus: DBReviewStatus,
                  val reviewAuthorID: Option[Long]) extends KeyedEntity[Long] {
   def this() = this(0, 0, 0, None, new Timestamp(java.lang.System.currentTimeMillis()), "", DBReviewStatus.Outstanding, None)
-
-  def entries(): Iterable[DBRevisionEntry] = {
-    from(Library.revisionEntries)(re =>
-      where(re.repoID === repoID and re.revisionID === id)
-        select re
-        orderBy re.path
-    )
-  }
 }
 
 object DBRevision {
@@ -166,6 +158,14 @@ object DBRevisionEntry {
   def lookup(id: Long): Option[DBRevisionEntry] = Library.revisionEntries.lookup(id)
 
   def get(id: Long): DBRevisionEntry = lookup(id).get
+
+  def find(repoID: Long, revisionID: Long): Iterable[DBRevisionEntry] = {
+    from(Library.revisionEntries)(re =>
+      where(re.repoID === repoID and re.revisionID === revisionID)
+        select re
+        orderBy re.path
+    )
+  }
 }
 
 class DBRevisionEntryContent(val id: Long,

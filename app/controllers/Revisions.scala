@@ -7,7 +7,7 @@ import play.api.mvc.{Action, RequestHeader, SimpleResult}
 object Revisions extends AuthController {
   def list = Action {
     implicit request =>
-      Ok()
+      Ok("Hello")
   }
 
   def showAsHTML(revisionID: Long) = Action {

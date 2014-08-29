@@ -102,6 +102,10 @@ object RevisionEntry {
     }
   }
 
+  def find(revision: Revision): Traversable[RevisionEntry] = inTransaction {
+    DBRevisionEntry.find(revision.repo.id, revision.id).map(x => dbToModel(revision.repo, x))
+  }
+
   def get(revisionEntryID: models.RevisionEntryID): RevisionEntry = find(revisionEntryID).get
 
   def feedback(revisionEntry: RevisionEntry): Traversable[Feedback] = inTransaction {
@@ -203,7 +207,7 @@ case class ReviewComplete(author: Author) extends Review {
   override def toString = "Completed"
 }
 
-class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionNumber, val repoAuthor: Option[RepoAuthor], val date: Date, val logMessage: String, val revisionEntries: Traversable[RevisionEntry], val review: Review) {
+class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionNumber, val repoAuthor: Option[RepoAuthor], val date: Date, val logMessage: String, val review: Review) {
   def canComplete(maybeAuthor: Option[Author]): Boolean = reviewPredicate(maybeAuthor, a => review.isInstanceOf[ReviewInProgress] && a.id == review.asInstanceOf[ReviewInProgress].author.id)
 
   def canReview(maybeAuthor: Option[Author]): Boolean = reviewPredicate(maybeAuthor, a => review.isInstanceOf[ReviewOutstanding] && a.id != author.map(x => x.id).getOrElse(-1))
@@ -212,7 +216,7 @@ class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionN
     review match {
       case progress: ReviewInProgress =>
         if (a.id == progress.author.id)
-          Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries, ReviewComplete(a)))
+          Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, ReviewComplete(a)))
         else
           Left("Only the author who started a revision review may complete the review")
       case _ => Left("Unable to complete a review that is not in progress")
@@ -223,14 +227,14 @@ class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionN
       if (a.id == author.map(x => x.id).getOrElse(-1))
         Left("The author who checked in a revision may not review their check-in")
       else
-        Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries, ReviewInProgress(a)))
+        Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, ReviewInProgress(a)))
     else
       Left("Unable to start a review that is not outstanding"))
 
 
   def cancelReview(maybeAuthor: Option[Author]): Either[String, Revision] = reviewAction(maybeAuthor, a =>
     if (review.isInstanceOf[ReviewInProgress])
-      Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, revisionEntries, ReviewOutstanding()))
+      Right(Revision(id, repo, revisionNumber, repoAuthor, date, logMessage, ReviewOutstanding()))
     else
       Left("Unable to cancel a review that is not in progress"))
 
@@ -244,6 +248,8 @@ class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionN
     case Some(a) => action(a)
   }
 
+  def revisionEntries: Traversable[RevisionEntry] = RevisionEntry.find(this)
+
   def findRevisionEntry(entry: Entry): Option[RevisionEntry] =
     revisionEntries.find(p => p.entry.path == entry.path)
 
@@ -256,17 +262,21 @@ class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionN
 }
 
 object Revision {
-  def apply(id: RevisionID, repo: Repo, revisionNumber: RevisionNumber, repoAuthor: Option[RepoAuthor], timestamp: Date, logMessage: String, revisionEntries: Traversable[RevisionEntry], review: Review): Revision = {
-    new Revision(id, repo, revisionNumber, repoAuthor, timestamp, logMessage, revisionEntries, review)
+  def apply(id: RevisionID, repo: Repo, revisionNumber: RevisionNumber, repoAuthor: Option[RepoAuthor], timestamp: Date, logMessage: String, review: Review): Revision = {
+    new Revision(id, repo, revisionNumber, repoAuthor, timestamp, logMessage, review)
   }
 
   def apply(): Revision =
-    new Revision(UNKNOWN_REVISION_ID, null, UNKNOWN_REVISION_NUMBER, None, null, null, null, ReviewOutstanding())
+    new Revision(UNKNOWN_REVISION_ID, null, UNKNOWN_REVISION_NUMBER, None, null, null, ReviewOutstanding())
+
+  //  def all(): Iterable[Revision] = inTransaction {
+  //    DBRevision.all().map(dbToModel)
+  //  }
 
   def find(revisionID: RevisionID): Option[Revision] = inTransaction {
     val dbRevision = DBRevision.get(revisionID)
     Repo.find(dbRevision.repoID) match {
-      case Some(repo) => Some(dbToModel(repo, dbRevision, dbRevision.entries()))
+      case Some(repo) => Some(dbToModel(repo, dbRevision))
       case None => None
     }
   }
@@ -286,7 +296,7 @@ object Revision {
     System.out.println(modelToDB(revision))
   }
 
-  def dbToModel(repo: Repo, dbRevision: DBRevision, dbRevisionEntries: Iterable[DBRevisionEntry]): Revision =
+  def dbToModel(repo: Repo, dbRevision: DBRevision): Revision =
     new Revision(
       dbRevision.id,
       repo,
@@ -294,7 +304,6 @@ object Revision {
       if (dbRevision.repoAuthorID.isDefined) Some(RepoAuthor.get(dbRevision.repoAuthorID.get)) else None,
       dbRevision.date,
       dbRevision.logMessage,
-      dbRevisionEntries.map(dbRevisionEntry => RevisionEntry.dbToModel(repo, dbRevisionEntry)),
       Review(dbRevision)
     )
 

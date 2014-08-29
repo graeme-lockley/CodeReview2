@@ -6,7 +6,7 @@ import java.util
 import models.{AddEntry, DeleteEntry, DirEntry, FileEntry, ModifiedEntry, NoneEntry, ReplacedEntry, UnknownEntry, _}
 import org.squeryl.PrimitiveTypeMode._
 import org.tmatesoft.svn.core._
-import org.tmatesoft.svn.core.io.{SVNRepository, SVNRepositoryFactory}
+import org.tmatesoft.svn.core.io.{SVNRepository => SVNRepo, SVNRepositoryFactory => SVNRepoFactory}
 import org.tmatesoft.svn.core.wc.SVNWCUtil
 import ports.DBResourceType.DBResourceType
 import ports._
@@ -17,7 +17,7 @@ object SVNRepository {
   def refresh(repo: Repo): Unit = inTransaction {
     val repoID = repo.id
     val dbRepo = DBRepo.get(repoID)
-    for (repoRevision: Revision <- repoRevisions(repo, dbRepo.largestRevisionNumber())) {
+    for ((repoRevision: Revision, revisionEntries: RevisionEntry) <- repoRevisions(repo, dbRepo.largestRevisionNumber())) {
       val dbRepoAuthorID = repoRevision.repoAuthor match {
         case Some(author) => Some(DBRepoAuthor.getOrCreate(author.repo.id, author.name).id)
         case None => None
@@ -26,7 +26,7 @@ object SVNRepository {
 
       Library.revisions.insert(dbRevision)
 
-      for (revisionEntry <- repoRevision.revisionEntries) {
+      for (revisionEntry <- revisionEntries) {
         val dbRevisionEntry = revisionEntry match {
           case AddEntry(id, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.AddEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
           case DeleteEntry(id, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.DeleteEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
@@ -45,13 +45,13 @@ object SVNRepository {
     case UnknownEntry(_, _) => DBResourceType.UnknownResource
   }
 
-  private def repoRevisions(repo: Repo, revisionNumber: Long): Traversable[Revision] = {
+  private def repoRevisions(repo: Repo, revisionNumber: Long): Traversable[(Revision, Traversable[RevisionEntry])] = {
     val repository = svnRepository(repo)
 
-    def convertLogEntry(logEntry: SVNLogEntry): Revision = {
+    def convertLogEntry(logEntry: SVNLogEntry): (Revision, Traversable[RevisionEntry]) = {
       val revisionEntries = logEntry.getChangedPaths.values.asScala.map(convertLogEntryPath)
       val author = if (logEntry.getAuthor == null) None else Some(RepoAuthor(-1L, repo, None, logEntry.getAuthor))
-      new Revision(-1L, repo, logEntry.getRevision, author, logEntry.getDate, logEntry.getMessage, revisionEntries, ReviewOutstanding())
+      (new Revision(-1L, repo, logEntry.getRevision, author, logEntry.getDate, logEntry.getMessage, ReviewOutstanding()), revisionEntries)
     }
 
     def convertNodeKind(kind: SVNNodeKind, path: String): Entry = kind match {
@@ -86,8 +86,8 @@ object SVNRepository {
     outputStream.toString
   }
 
-  private def svnRepository(repo: Repo): SVNRepository = {
-    val repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(repo.credentials.url))
+  private def svnRepository(repo: Repo): SVNRepo = {
+    val repository = SVNRepoFactory.create(SVNURL.parseURIEncoded(repo.credentials.url))
     repository.setAuthenticationManager(SVNWCUtil.createDefaultAuthenticationManager(repo.credentials.userName, repo.credentials.password))
     repository
   }
