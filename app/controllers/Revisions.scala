@@ -18,7 +18,13 @@ object Revisions extends AuthController {
   def list = Action {
     implicit request =>
       val query = request.getQueryString("query")
-      val all = if (query.isEmpty) Revision.all() else Revision.all(queries.get(query.get).get)
+      val all =
+        if (query.getOrElse("").equals("inProgressMine"))
+          Revision.all((r: DBRevision) => r.reviewStatus in Set(DBReviewStatus.InProgress) and r.reviewAuthorID === loggedOnUser.map(x => x.id))
+        else if (query.isEmpty)
+          Revision.all()
+        else
+          Revision.all(queries.get(query.get).get)
 
       Ok(Json.stringify(revisionWriter.write(all)))
   }
