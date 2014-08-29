@@ -42,15 +42,15 @@ var Revision = Backbone.Model.extend({
             return reviewAuthor;
         }
     },
+    reviewInProgress: function () {
+        return this.reviewStatus() == "In progress";
+    },
     author: function () {
         if (this.get("author").author == undefined) {
             return this.get("author").name;
         } else {
             return this.get("author").author.name;
         }
-    },
-    canReview: function () {
-        return this.isReviewOutstanding();
     },
     verbs: function () {
         return this.get("verbs");
