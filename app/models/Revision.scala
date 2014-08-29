@@ -269,9 +269,20 @@ object Revision {
   def apply(): Revision =
     new Revision(UNKNOWN_REVISION_ID, null, UNKNOWN_REVISION_NUMBER, None, null, null, ReviewOutstanding())
 
-  //  def all(): Iterable[Revision] = inTransaction {
-  //    DBRevision.all().map(dbToModel)
-  //  }
+  def all(): Iterable[Revision] = inTransaction {
+    var repos: Map[RepoID, Repo] = Map()
+    def getRepo(repoID: RepoID): Repo = {
+      repos.get(repoID) match {
+        case None => {
+          val repo = Repo.get(repoID)
+          repos = repos.+((repoID, repo))
+          repo
+        }
+        case Some(repo) => repo
+      }
+    }
+    DBRevision.all().map(x => dbToModel(getRepo(x.repoID), x))
+  }
 
   def find(revisionID: RevisionID): Option[Revision] = inTransaction {
     val dbRevision = DBRevision.get(revisionID)

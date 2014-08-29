@@ -120,6 +120,8 @@ object DBRevision {
   def apply(id: Long, repoID: Long, revisionNumber: Long, repoAuthorID: Option[Long], time: Long, logMessage: String, reviewStatus: DBReviewStatus, reviewAuthorID: Option[Long]) =
     new DBRevision(id, repoID, revisionNumber, repoAuthorID, new java.sql.Timestamp(time), logMessage, reviewStatus, reviewAuthorID)
 
+  def all(): Query[DBRevision] = from(Library.revisions)(w => select(w))
+
   def lookup(revisionID: Long): Option[DBRevision] = Library.revisions.lookup(revisionID)
 
   def get(revisionID: Long): DBRevision = lookup(revisionID).get

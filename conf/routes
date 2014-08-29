@@ -16,6 +16,7 @@ GET         /repos/:id                         controllers.Repos.show(id: Long)
 GET         /repos/:id/refresh                 controllers.Repos.refresh(id: Long)
 GET         /repos/:id/authors                 controllers.Repos.authors(id: Long)
 PUT         /repoAuthors/:id                   controllers.RepoAuthors.update(id: Long)
+GET         /revisions                         controllers.Revisions.list
 GET         /revisions/:id/html                controllers.Revisions.showAsHTML(id: Long)
 GET         /revisions/:id                     controllers.Revisions.show(id: Long)
 GET         /revisions/:id/start               controllers.Revisions.startReview(id: Long)

@@ -28,6 +28,8 @@ package object controllers {
       case ReviewInProgress(author) => Json.obj("state" -> "In progress", "author" -> authorWriter.write(author))
       case ReviewComplete(author) => Json.obj("state" -> "Complete", "author" -> authorWriter.write(author))
     }
+
+    def write(revisions: Traversable[Revision]): JsValue = Json.toJson(revisions.map(x => write(x)))
   }
 
   val revisionEntryWriter = new {
