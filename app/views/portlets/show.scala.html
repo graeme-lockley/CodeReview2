@@ -1,8 +1,19 @@
 @()(implicit request: play.api.mvc.RequestHeader)
 
 @main("Workspace", None) {
-    <h1> &nbsp; </h1>
-    <div id="thingy"></div>
+    <br/>
+
+    <h1> Revisions I am Reviewing </h1>
+    <div id="myReviewRevisions" class="revisions" data-collection="/revisions?query=inProgressMine"></div>
+
+    <h1> In Progress Revision Reviews </h1>
+    <div id="inProgressRevisions" class="revisions" data-collection="/revisions?query=inProgress"></div>
+
+    <h1> Completed Revision Reviews </h1>
+    <div id="completeRevisions" class="revisions" data-collection="/revisions?query=complete"></div>
+
+    <h1> Outstanding Revision Reviews </h1>
+    <div id="outstandingRevisions" class="revisions" data-collection="/revisions?query=outstanding"></div>
 }
 
 <script src='@routes.Assets.at("javascripts/models.js")' type="text/javascript"></script>

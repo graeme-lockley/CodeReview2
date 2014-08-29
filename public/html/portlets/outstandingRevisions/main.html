@@ -11,7 +11,7 @@
     <% revisions.forEach(function(revision) { %>
     <tr id="revisionList-<%- revision.id %>">
         <td> <%- revision.get("repo").name %></td>
-        <td> <%- revision.get("date") %></td>
+        <td width="140px"> <%- revision.get("date") %></td>
         <td><a href="#"><%- revision.get("logMessage") %></a></td>
         <td> <%- revision.author() %></td>
     </tr>

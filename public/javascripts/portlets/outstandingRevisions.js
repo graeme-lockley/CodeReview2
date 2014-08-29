@@ -14,8 +14,8 @@ $(document).ready(function () {
             }
         });
 
-        var OutstandingsRevisionsView = Backbone.View.extend({
-            el: "#thingy",
+        var OutstandingRevisionsView = Backbone.View.extend({
+//            el: "#outstandingRevisions",
             initialize: function () {
                 this.listenTo(this.model, 'sync', this.render);
                 this.model.fetch();
@@ -31,8 +31,10 @@ $(document).ready(function () {
             }
         });
 
-        var revisions = new Revisions();
-        revisions.url = "/revisions?query=outstanding";
-        var uncheckedRevisionsView = new OutstandingsRevisionsView({model: revisions});
+        $(".revisions").each(function (idx, dom) {
+            var revisions = new Revisions();
+            revisions.url = $(dom).attr("data-collection");
+            var outstandingRevisionsView = new OutstandingRevisionsView({model: revisions, el: "#" + $(dom).attr("id")});
+        });
     });
 });
