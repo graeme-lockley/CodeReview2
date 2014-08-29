@@ -42,6 +42,13 @@ var Revision = Backbone.Model.extend({
             return reviewAuthor;
         }
     },
+    author: function () {
+        if (this.get("author").author == undefined) {
+            return this.get("author").name;
+        } else {
+            return this.get("author").author.name;
+        }
+    },
     canReview: function () {
         return this.isReviewOutstanding();
     },
@@ -64,6 +71,22 @@ var Revision = Backbone.Model.extend({
                 alert("Error: " + e.responseText);
             }
         });
+    }
+});
+
+var Revisions = Backbone.Collection.extend({
+    model: Revision,
+    comparator: function (r1, r2) {
+        var r1date = r1.get("date");
+        var r2date = r2.get("date");
+
+        if (r1date < r2date) {
+            return 1;
+        } else if (r1date > r2date) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 });
 

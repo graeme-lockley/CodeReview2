@@ -4,6 +4,7 @@ import java.util.Date
 
 import adaptors.SVNRepository
 import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.dsl.ast.BinaryOperatorNodeLogicalBoolean
 import ports._
 
 sealed trait Entry {
@@ -284,6 +285,21 @@ object Revision {
     DBRevision.all().map(x => dbToModel(getRepo(x.repoID), x))
   }
 
+  def all(filter: DBRevision => BinaryOperatorNodeLogicalBoolean): Iterable[Revision] = inTransaction {
+    var repos: Map[RepoID, Repo] = Map()
+    def getRepo(repoID: RepoID): Repo = {
+      repos.get(repoID) match {
+        case None => {
+          val repo = Repo.get(repoID)
+          repos = repos.+((repoID, repo))
+          repo
+        }
+        case Some(repo) => repo
+      }
+    }
+    DBRevision.all(filter).map(x => dbToModel(getRepo(x.repoID), x))
+  }
+
   def find(revisionID: RevisionID): Option[Revision] = inTransaction {
     val dbRevision = DBRevision.get(revisionID)
     Repo.find(dbRevision.repoID) match {
@@ -303,8 +319,6 @@ object Revision {
 
   def save(revision: Revision) = inTransaction {
     DBRevision.update(modelToDB(revision))
-    System.out.println(revision)
-    System.out.println(modelToDB(revision))
   }
 
   def dbToModel(repo: Repo, dbRevision: DBRevision): Revision =

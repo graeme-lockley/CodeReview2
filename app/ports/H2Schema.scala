@@ -3,6 +3,7 @@ package ports
 import java.sql.Timestamp
 
 import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.dsl.ast.BinaryOperatorNodeLogicalBoolean
 import org.squeryl.{KeyedEntity, Query, Schema}
 import ports.DBEntryType.DBEntryType
 import ports.DBResourceType.DBResourceType
@@ -121,6 +122,9 @@ object DBRevision {
     new DBRevision(id, repoID, revisionNumber, repoAuthorID, new java.sql.Timestamp(time), logMessage, reviewStatus, reviewAuthorID)
 
   def all(): Query[DBRevision] = from(Library.revisions)(w => select(w))
+
+  def all(filter: DBRevision => BinaryOperatorNodeLogicalBoolean): Query[DBRevision] =
+    from(Library.revisions)(r => where(filter(r)) select r)
 
   def lookup(revisionID: Long): Option[DBRevision] = Library.revisions.lookup(revisionID)
 
