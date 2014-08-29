@@ -14,14 +14,14 @@ $(document).ready(function () {
             }
         });
 
-        var UncheckedRevisionsView = Backbone.View.extend({
+        var OutstandingsRevisionsView = Backbone.View.extend({
             el: "#thingy",
             initialize: function () {
                 this.listenTo(this.model, 'sync', this.render);
                 this.model.fetch();
             },
             render: function () {
-                this.$el.html(_.template(templateOnName("portlets/unchecked-revisions/main.html"), {revisions: this.model}));
+                this.$el.html(_.template(templateOnName("portlets/outstandingRevisions/main.html"), {revisions: this.model}));
 
                 this.model.forEach(function (revision) {
                     var x = new RevisionLineView({model: revision});
@@ -33,6 +33,6 @@ $(document).ready(function () {
 
         var revisions = new Revisions();
         revisions.url = "/revisions?query=outstanding";
-        var uncheckedRevisionsView = new UncheckedRevisionsView({model: revisions});
+        var uncheckedRevisionsView = new OutstandingsRevisionsView({model: revisions});
     });
 });
