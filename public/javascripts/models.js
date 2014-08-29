@@ -27,7 +27,7 @@ var Authors = Backbone.Collection.extend({
     url: "/authors"
 });
 
-var Revisions = Backbone.Model.extend({
+var Revision = Backbone.Model.extend({
     urlRoot: "/revisions",
 
     reviewStatus: function () {

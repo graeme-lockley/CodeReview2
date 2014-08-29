@@ -8,7 +8,7 @@ $(document).ready(function () {
             ]
         });
 
-        revision = new Revisions({id: $("#revisionid").html()});
+        revision = new Revision({id: $("#revisionid").html()});
         revision.fetch({async: false});
 
         var BodyView = Backbone.View.extend({
