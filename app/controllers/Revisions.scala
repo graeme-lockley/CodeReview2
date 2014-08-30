@@ -38,7 +38,7 @@ object Revisions extends AuthController {
 
   def show(revisionID: Long) = Action {
     implicit request =>
-      val revision = Revision.find(revisionID).get
+      val revision = Revision.get(revisionID)
 
       showRevision(revision)
   }
@@ -70,5 +70,12 @@ object Revisions extends AuthController {
       .addIf(revision.canComplete(loggedOnUser), "Complete", routes.Revisions.completeReview(revision.id))
       .create
     Ok(Json.stringify(revisionWriter.write(revision, verbs)))
+  }
+
+  def entries(id: Long) = Action {
+    implicit request =>
+      val revision = Revision.get(id)
+
+      Ok(Json.stringify(revisionEntryWriter.write(revision.revisionEntries)))
   }
 }
