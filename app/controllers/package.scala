@@ -61,6 +61,15 @@ package object controllers {
     )
   }
 
+  val feedbackWriter = new {
+    def write(feedback: Traversable[Feedback]): JsValue = Json.toJson(feedback.map {
+      case issue: Issue => issueWriter.write(issue)
+      case issueResponse: IssueResponse => issueResponseWriter.write(issueResponse)
+      case commentary: Commentary => commentaryWriter.write(commentary)
+      case commentaryResponse: CommentaryResponse => commentaryResponseWriter.write(commentaryResponse)
+    })
+  }
+
   val issueWriter = new {
     def write(issue: Issue): JsObject = Json.obj(
       "type" -> "issue",

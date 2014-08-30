@@ -24,5 +24,6 @@ GET         /revisions/:id/cancel              controllers.Revisions.cancelRevie
 GET         /revisions/:id/complete            controllers.Revisions.completeReview(id: Long)
 GET         /revisionEntries/diff/:id          controllers.RevisionEntries.diffAgainstPreviousRevision(id: Long)
 GET         /revisionEntries/:id               controllers.RevisionEntries.show(id: Long)
+GET         /revisionEntries/:id/feedback      controllers.RevisionEntries.feedback(id: Long)
 
 GET         /assets/*file                      controllers.Assets.at(path="/public", file)

@@ -23,4 +23,13 @@ object RevisionEntries extends Controller {
 
       Ok(Json.stringify(revisionEntryWriter.write(revisionEntry)))
   }
+
+  def feedback(id: Long) = Action {
+    implicit request => {
+      var revisionEntry = RevisionEntry.get(id);
+
+
+      Ok(Json.stringify(feedbackWriter.write(revisionEntry.feedback())))
+    }
+  }
 }
