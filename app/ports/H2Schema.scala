@@ -211,6 +211,9 @@ class DBRevisionEntryFeedback(val id: Long,
 }
 
 object DBRevisionEntryFeedback {
+  def all(filter: (DBRevisionEntryFeedback) => BinaryOperatorNodeLogicalBoolean) =
+    from(Library.revisionEntryComment)(r => where(filter(r)) select r)
+
   def childrenByDate(parentID: Long): Traversable[DBRevisionEntryFeedback] =
     from(Library.revisionEntryComment)(re =>
       where(re.parentID === parentID) select re
