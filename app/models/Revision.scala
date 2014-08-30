@@ -50,20 +50,22 @@ object Entry {
 
 sealed trait RevisionEntry {
   val id: RevisionEntryID
+  val revisionID: RevisionID
+
   val entry: Entry
 
   def operation: String
 
-  override def toString: String = operation + ": (" + entry + ")"
+  override def toString: String = (revisionID, entry, operation).toString
 
   def revisionNumber: RevisionNumber = {
-    Revision.findRevisionOnRevisionEntryID(id) match {
+    Revision.find(revisionID) match {
       case Some(revision) => revision.revisionNumber
       case None => UNKNOWN_REVISION_NUMBER
     }
   }
 
-  def revision: Revision = Revision.findRevisionOnRevisionEntryID(id).get
+  def revision: Revision = Revision.get(revisionID)
 
   def previousRevisionEntry(): Option[RevisionEntry] = {
     def calcFromRevision(): Revision = {
@@ -127,10 +129,10 @@ object RevisionEntry {
       case DBResourceType.UnknownResource => new UnknownEntry(repo, dbRevisionEntry.path)
     }
     dbRevisionEntry.entryType match {
-      case DBEntryType.AddEntry => new AddEntry(dbRevisionEntry.id, entry)
-      case DBEntryType.DeleteEntry => new DeleteEntry(dbRevisionEntry.id, entry)
-      case DBEntryType.ModifyEntry => new ModifiedEntry(dbRevisionEntry.id, entry)
-      case DBEntryType.ReplaceEntry => new ReplacedEntry(dbRevisionEntry.id, entry, dbRevisionEntry.copyPath.get, dbRevisionEntry.copyRevision.get)
+      case DBEntryType.AddEntry => new AddEntry(dbRevisionEntry.id, dbRevisionEntry.revisionID, entry)
+      case DBEntryType.DeleteEntry => new DeleteEntry(dbRevisionEntry.id, dbRevisionEntry.revisionID, entry)
+      case DBEntryType.ModifyEntry => new ModifiedEntry(dbRevisionEntry.id, dbRevisionEntry.revisionID, entry)
+      case DBEntryType.ReplaceEntry => new ReplacedEntry(dbRevisionEntry.id, dbRevisionEntry.revisionID, entry, dbRevisionEntry.copyPath.get, dbRevisionEntry.copyRevision.get)
     }
   }
 
@@ -153,35 +155,22 @@ object RevisionEntry {
   }
 }
 
-case class AddEntry(id: RevisionEntryID, entry: Entry) extends RevisionEntry {
+case class AddEntry(id: RevisionEntryID, revisionID: RevisionID, entry: Entry) extends RevisionEntry {
   def operation = "Add"
 }
 
-case class DeleteEntry(id: RevisionEntryID, entry: Entry) extends RevisionEntry {
+case class DeleteEntry(id: RevisionEntryID, revisionID: RevisionID, entry: Entry) extends RevisionEntry {
   def operation = "Delete"
 }
 
-case class ModifiedEntry(id: RevisionEntryID, entry: Entry) extends RevisionEntry {
+case class ModifiedEntry(id: RevisionEntryID, revisionID: RevisionID, entry: Entry) extends RevisionEntry {
   def operation = "Modify"
 }
 
-case class ReplacedEntry(id: RevisionEntryID, entry: Entry, copyPath: String, copyRevision: RevisionNumber) extends RevisionEntry {
+case class ReplacedEntry(id: RevisionEntryID, revisionID: RevisionID, entry: Entry, copyPath: String, copyRevision: RevisionNumber) extends RevisionEntry {
   def operation = "Replace"
 
   override def toString: String = operation + ": (" + entry + ", " + copyPath + ", " + copyRevision + ")"
-}
-
-object NullRevisionEntry extends RevisionEntry {
-  val id: RevisionEntryID = UNKNOWN_REVISION_ENTRY_ID
-  val entry: Entry = NullEntry
-
-  def operation = "Unknown"
-
-  override def revisionNumber = -1
-
-  override def previousRevisionEntry(): Option[RevisionEntry] = None
-
-  override def content() = ""
 }
 
 trait Review {
@@ -263,6 +252,8 @@ class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionN
 }
 
 object Revision {
+  def all(function: (DBRevisionEntryFeedback) => Any) = ???
+
   def apply(id: RevisionID, repo: Repo, revisionNumber: RevisionNumber, repoAuthor: Option[RepoAuthor], timestamp: Date, logMessage: String, review: Review): Revision = {
     new Revision(id, repo, revisionNumber, repoAuthor, timestamp, logMessage, review)
   }
