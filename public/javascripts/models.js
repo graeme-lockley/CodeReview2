@@ -90,6 +90,14 @@ var Revisions = Backbone.Collection.extend({
     }
 });
 
+var FeedbackItem = Backbone.Model.extend({
+    urlRoot: "/feedback"
+});
+
+var Feedback = Backbone.Collection.extend({
+    model: FeedbackItem
+});
+
 function setHtml(domElement, templateName, templateState) {
     var theTemplate = $("#" + templateName).html();
     domElement.html(_.template(theTemplate, templateState));
