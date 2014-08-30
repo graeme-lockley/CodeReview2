@@ -1,4 +1,4 @@
-@(firstRevisionEntry: models.RevisionEntry, secondRevisionEntry: models.RevisionEntry, difference: services.RevisionEntryDifference)(implicit request: play.api.mvc.RequestHeader)
+@(firstRevisionEntry: Option[models.RevisionEntry], secondRevisionEntry: Option[models.RevisionEntry], difference: services.RevisionEntryDifference)(implicit request: play.api.mvc.RequestHeader)
 
 <style>
 td.linenum {
@@ -123,11 +123,11 @@ padding : 5 px ;
     </ul>
 </script>
 
-<script type="template/underscore" id="revisionNumber">@secondRevisionEntry.id</script>
+<script type="template/underscore" id="revisionNumber">@secondRevisionEntry.map(_.id).getOrElse(UNKNOWN_REVISION_ENTRY_ID)</script>
 
 <!--  -->
 
-@main("Differences", Some(views.BackSelection("Revision " + secondRevisionEntry.revision.id + " - " + secondRevisionEntry.entry.repo.name, "/revisions/" + secondRevisionEntry.revision.id + "/html"))) {
+@main("Differences", Some(views.BackSelection("Revision " + secondRevisionEntry.map(_.revision.id).getOrElse(UNKNOWN_REVISION_ID) + " - " + secondRevisionEntry.map(_.entry.repo.name).getOrElse(""), "/revisions/" + secondRevisionEntry.map(_.revision.id).getOrElse(UNKNOWN_REVISION_ID) + "/html"))) {
     <div class="page-header">
         <h1>Differences</h1>
 
@@ -135,12 +135,12 @@ padding : 5 px ;
             <thead>
                 <tr>
                     <th>&nbsp;</th>
-                    @defining(firstRevisionEntry.revisionNumber) { fromRevisionNumber =>
+                    @defining(firstRevisionEntry.map(_.revisionNumber).getOrElse(UNKNOWN_REVISION_NUMBER)) { fromRevisionNumber =>
                         <th>Revision @{ if(fromRevisionNumber < 0) "" else fromRevisionNumber } </th>
                     }
                     <th>&nbsp;</th>
                     <th>&nbsp;</th>
-                    @defining(secondRevisionEntry.revisionNumber) { toRevisionNumber =>
+                    @defining(secondRevisionEntry.map(_.revisionNumber).getOrElse(UNKNOWN_REVISION_NUMBER)) { toRevisionNumber =>
                         <th>Revision @{ if(toRevisionNumber < 0) "" else toRevisionNumber} </th>
                     }
                 </tr>
