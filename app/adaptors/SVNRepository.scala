@@ -28,10 +28,10 @@ object SVNRepository {
 
       for (revisionEntry <- revisionEntries) {
         val dbRevisionEntry = revisionEntry match {
-          case AddEntry(id, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.AddEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
-          case DeleteEntry(id, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.DeleteEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
-          case ModifiedEntry(id, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.ModifyEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
-          case ReplacedEntry(id, entry, path, revision) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.ReplaceEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, Some(path), Some(revision))
+          case AddEntry(id, revisionID, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.AddEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
+          case DeleteEntry(id, revisionID, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.DeleteEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
+          case ModifiedEntry(id, revisionID, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.ModifyEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
+          case ReplacedEntry(id, revisionID, entry, path, revision) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.ReplaceEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, Some(path), Some(revision))
         }
         Library.revisionEntries.insert(dbRevisionEntry)
       }
@@ -64,10 +64,10 @@ object SVNRepository {
     def convertLogEntryPath(entryPath: SVNLogEntryPath): RevisionEntry = {
       val kindOfEntry = convertNodeKind(entryPath.getKind, entryPath.getPath)
       entryPath.getType match {
-        case 'A' => new AddEntry(UNKNOWN_REVISION_ENTRY_ID, kindOfEntry)
-        case 'D' => new DeleteEntry(UNKNOWN_REVISION_ENTRY_ID, kindOfEntry)
-        case 'M' => new ModifiedEntry(UNKNOWN_REVISION_ENTRY_ID, kindOfEntry)
-        case 'R' => new ReplacedEntry(UNKNOWN_REVISION_ENTRY_ID, kindOfEntry, entryPath.getCopyPath, entryPath.getCopyRevision)
+        case 'A' => new AddEntry(UNKNOWN_REVISION_ENTRY_ID, UNKNOWN_REVISION_ID, kindOfEntry)
+        case 'D' => new DeleteEntry(UNKNOWN_REVISION_ENTRY_ID, UNKNOWN_REVISION_ID, kindOfEntry)
+        case 'M' => new ModifiedEntry(UNKNOWN_REVISION_ENTRY_ID, UNKNOWN_REVISION_ID, kindOfEntry)
+        case 'R' => new ReplacedEntry(UNKNOWN_REVISION_ENTRY_ID, UNKNOWN_REVISION_ID, kindOfEntry, entryPath.getCopyPath, entryPath.getCopyRevision)
         case _ => throw new IllegalArgumentException("SVNRepo.convert: unknown entryPath type: " + entryPath.getType)
       }
     }
