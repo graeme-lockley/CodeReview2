@@ -9,9 +9,9 @@ import models.RevisionEntry
 
 import scala.collection.JavaConverters._
 
-class RevisionEntryDifference(val fromRevisionEntry: RevisionEntry, val toRevisionEntry: RevisionEntry) {
-  val fromRevisionContent = stringToLines(fromRevisionEntry.content())
-  val toRevisionContent = stringToLines(toRevisionEntry.content())
+class RevisionEntryDifference(val fromRevisionEntry: Option[RevisionEntry], val toRevisionEntry: Option[RevisionEntry]) {
+  val fromRevisionContent = stringToLines(fromRevisionEntry.map(_.content()).getOrElse(""))
+  val toRevisionContent = stringToLines(toRevisionEntry.map(_.content()).getOrElse(""))
 
   def difference(): util.List[Delta] = {
     val patch = DiffUtils.diff(fromRevisionContent, toRevisionContent)
@@ -115,5 +115,5 @@ class EntryLine(val fromLine: String, val fromLineNumber: Int, val fromLineAnnot
 }
 
 object RevisionEntryDifference {
-  def apply(fromRevisionEntry: RevisionEntry, toRevisionEntry: RevisionEntry): RevisionEntryDifference = new RevisionEntryDifference(fromRevisionEntry, toRevisionEntry)
+  def apply(fromRevisionEntry: Option[RevisionEntry], toRevisionEntry: Option[RevisionEntry]): RevisionEntryDifference = new RevisionEntryDifference(fromRevisionEntry, toRevisionEntry)
 }
