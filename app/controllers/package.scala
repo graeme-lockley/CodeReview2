@@ -34,10 +34,35 @@ package object controllers {
 
   val revisionEntryWriter = new {
     def write(revisionEntry: RevisionEntry): JsObject = Json.obj(
+      "id" -> revisionEntry.id,
+      "entry" -> write(revisionEntry.entry),
+      "operation" -> revisionEntry.operation,
       "feedback" -> revisionEntry.feedback().map {
         case c: Commentary => commentaryWriter.write(c)
         case i: Issue => issueWriter.write(i)
-      })
+      }
+    )
+
+    def write(revisionEntries: Traversable[RevisionEntry]): JsValue = Json.toJson(revisionEntries.map(revisionEntry => write(revisionEntry)))
+
+    def write(entry: Entry): JsObject = entry match {
+      case NoneEntry(repo, path) => Json.obj(
+        "type" -> "none",
+        "repo" -> repoWriter.writeSummary(repo),
+        "path" -> path)
+      case FileEntry(repo, path) => Json.obj(
+        "type" -> "file",
+        "repo" -> repoWriter.writeSummary(repo),
+        "path" -> path)
+      case DirEntry(repo, path) => Json.obj(
+        "type" -> "dir",
+        "repo" -> repoWriter.writeSummary(repo),
+        "path" -> path)
+      case UnknownEntry(repo, path) => Json.obj(
+        "type" -> "unknown",
+        "repo" -> repoWriter.writeSummary(repo),
+        "path" -> path)
+    }
   }
 
   val commentaryWriter = new {
@@ -97,6 +122,10 @@ package object controllers {
       "id" -> repo.id,
       "name" -> repo.name,
       "credentials" -> write(repo.credentials)
+    )
+
+    def writeSummary(repo: Repo): JsObject = Json.obj(
+      "id" -> repo.id
     )
 
     def write(repoCredentials: RepoCredentials): JsObject = Json.obj(
