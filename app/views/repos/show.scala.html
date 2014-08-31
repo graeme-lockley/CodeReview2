@@ -1,40 +1,44 @@
 @(repo: Repo)(implicit request: play.api.mvc.RequestHeader)
 
-@main("@repo.name", None) {
-    <div class="page-header">
-        <h1>@repo.name</h1>
-    </div>
+    @main("@repo.name", None) {
+        <div class="page-header">
+            <h1>@repo.name</h1>
+        </div>
 
-    <table class="table table-condensed tablesorter" id="bob2">
-        <thead>
-            <tr>
-                <th>Revision Number</th>
-                <th>Author</th>
-                <th>Date</th>
-                <th>Message</th>
-                <th>Number of Entries</th>
-            </tr>
-        </thead>
-        <tbody>
-        @for(revision <- repo.revisions()) {
-            <tr>
-                <td> @revision.revisionNumber </td>
-                <td> @revision.repoAuthor </td>
-                <td> @revision.date </td>
-                <td> @revision.logMessage </td>
-                <td> <a href="@routes.Revisions.show(revision.id)"><span class="badge">@revision.revisionEntries.size</span></a> </td>
-            </tr>
-        }
-        </tbody>
-    </table>
+        <table class="table table-condensed tablesorter" id="bob2">
+            <thead>
+                <tr>
+                    <th>Revision Number</th>
+                    <th>Author</th>
+                    <th>Date</th>
+                    <th>Message</th>
+                    <th>Number of Entries</th>
+                    <th>Review</th>
+                </tr>
+            </thead>
+            <tbody>
+            @for(revision <- repo.revisions()) {
+                <tr>
+                    <td> @revision.revisionNumber </td>
+                    <td> @{
+                        if(revision.repoAuthor.isDefined) revision.repoAuthor.get.name else ""
+                    } </td>
+                    <td> @revision.date </td>
+                    <td> @revision.logMessage </td>
+                    <td> <a href="@routes.Revisions.showAsHTML(revision.id)"><span class="badge">@revision.revisionEntries.size</span></a> </td>
+                    <td> @revision.review </td>
+                </tr>
+            }
+            </tbody>
+        </table>
 
-    <script type="text/javascript">
-    $(document).ready(function () {
-    $(function () {
-    $("#bob2").tablesorter({
-    sortList: [[0,1]]
-    });
-    });
-    });
-    </script>
-}
+        <script type="text/javascript">
+        $ ( document ).ready ( function ( ) {
+        $ ( function ( ) {
+        $ ( "#bob2" ).tablesorter ( {
+        sortList :[[ 0, 1 ] ]
+        } ) ;
+        } ) ;
+        } ) ;
+        </script>
+    }

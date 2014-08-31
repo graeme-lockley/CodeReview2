@@ -1,0 +1,9 @@
+<% if (_.size(revision.verbs()) > 0) { %>
+<div class="col-sm-2 control-label"> &nbsp; </div>
+<div class="col-sm-10 form-control-static">
+    <% _.forEach(revision.verbs(), function(endPoint, verb) { %>
+    <button type="button" class="btn verb"><%- verb %></button>
+    <% }); %>
+</div>
+<% } %>
+
