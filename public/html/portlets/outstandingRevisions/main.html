@@ -7,6 +7,34 @@
             <% if (revision.reviewInProgress()) { %>
             <br> Reviewer: <%- revision.reviewAuthor().get("name") %>
             <% } %>
+            <% if (showFeedback) { %>
+                <br>
+                <ul>
+                <%  revision.revisionEntries().forEach(function(entry) { %>
+                    <li> <%- entry.get("entry").path %> </li>
+                    <% if (entry.hasFeedback()) { %>
+                        <ul>
+                        <% entry.feedback().forEach(function(feedback) { %>
+                            <li>
+                                <%- feedback.lineNumber() %>: <%- feedback.comment() %>
+                                <% console.log(feedback); %>
+                                <% if (feedback.hasResponses()) { %>
+                                    <ul>
+                                        <% feedback.responses().forEach(function(response) { %>
+                                            <%- response.comment() %>
+                                            <% console.log(response); %>
+                                        <% }); %>
+                                    </ul>
+                                <% } else { %>
+                                    (no responses)
+                                <% } %>
+                            </li>
+                        <% }); %>
+                        </ul>
+                    <% } %>
+                <%  }); %>
+                </ul>
+            <% } %>
         </td>
     </tr>
     <% }); %>

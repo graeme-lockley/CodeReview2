@@ -13,12 +13,13 @@ $(document).ready(function () {
 
         var OutstandingRevisionsView = Backbone.View.extend({
             initialize: function () {
+                this.showFeedback = (this.$el.attr("data-show-feedback") || "false") == "true";
                 this.listenTo(this.model, 'sync', this.render);
                 this.model.fetch();
             },
             render: function () {
                 var prefix = this.$el.attr("id");
-                this.$el.html(_.template(templateOnName("portlets/outstandingRevisions/main.html"), {revisions: this.model, prefix: prefix}));
+                this.$el.html(_.template(templateOnName("portlets/outstandingRevisions/main.html"), {revisions: this.model, prefix: prefix, showFeedback: this.showFeedback}));
 
                 this.model.forEach(function (revision) {
                     var x = new RevisionLineView({model: revision, el: "#" + prefix + "-" + revision.id});

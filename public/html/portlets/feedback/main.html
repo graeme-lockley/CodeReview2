@@ -1,0 +1,9 @@
+<table class="table">
+    <% feedback.forEach(function(feedbackItem) { %>
+    <tr id="<%- prefix %>-<%- feedbackItem.id %>">
+        <td>
+            <%- feedbackItem.get("id") %> <br>
+        </td>
+    </tr>
+    <% }); %>
+</table>
