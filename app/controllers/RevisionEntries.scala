@@ -13,7 +13,7 @@ object RevisionEntries extends Controller {
 
       val differences = RevisionEntryDifference(firstRevisionEntry, secondRevisionEntry)
 
-      Ok(views.html.revisionEntries.diff(firstRevisionEntry, secondRevisionEntry, differences))
+      Ok(views.html.revisionEntries.diff(firstRevisionEntry, secondRevisionEntry, differences, None))
     }
   }
 
@@ -24,7 +24,7 @@ object RevisionEntries extends Controller {
 
       val differences = RevisionEntryDifference(firstRevisionEntry, secondRevisionEntry)
 
-      Ok(views.html.revisionEntries.diff(firstRevisionEntry, secondRevisionEntry, differences))
+      Ok(views.html.revisionEntries.diff(firstRevisionEntry, secondRevisionEntry, differences, Some(lineNumber)))
     }
   }
 

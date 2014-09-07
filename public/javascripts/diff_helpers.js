@@ -687,32 +687,6 @@ function annotateLines() {
 function openLine(lineNumber) {
     events.event("OpenLine")(lineNumber);
 }
-$.ajax({
-    type: "GET",
-    url: "/revisionEntries/" + parseInt($("#revisionNumber").html()),
-    contentType: "application/json; charset=utf-8",
-    dataType: "json",
-    success: function (data, status, jqXHR) {
-        for (var i = 0; i < data.feedback.length; i += 1) {
-            var feedbackItem = data.feedback[i];
-
-            if (feedbackItem.type == "issue") {
-                var issue = new Issue();
-                issue.refreshFromJSON(feedbackItem);
-                feedback.addFeedbackItem(issue);
-            } else if (feedbackItem.type == "comment") {
-                var comment = new FeedbackComment();
-                comment.refreshFromJSON(feedbackItem);
-                feedback.addFeedbackItem(comment);
-            }
-        }
-        annotateLines();
-    },
-    error: function (jqXHR, status) {
-        alert("Unable to retrieve information relating to the revision.");
-    }
-});
-
 
 ///////////////////////
 
@@ -817,21 +791,6 @@ function hasCommentLineOnPage(commentLine) {
     return $("#" + commentLine.name()).length > 0
 }
 
-$(document).ready(function () {
-    $(".source").click(function (event) {
-        var commentLine = new CommentLine(parseInt(event.target.id));
-
-        if (!hasCommentLineOnPage(commentLine)) {
-            openLine(commentLine.lineNumber);
-        }
-
-        $("#" + commentLine.name()).collapse('toggle');
-    });
-    $(function () {
-        $("bob2").tablesorter();
-    });
-});
-
 function fetchLoggedOnUser() {
     $.ajax({
         type: "GET",
@@ -848,6 +807,57 @@ function fetchLoggedOnUser() {
 }
 
 $(document).ready(function () {
+    function stuffOnLine(lineNumber) {
+        var commentLine = new CommentLine(parseInt(event.target.id));
+
+        if (!hasCommentLineOnPage(commentLine)) {
+            openLine(commentLine.lineNumber);
+        }
+
+        $("#" + commentLine.name()).collapse('toggle');
+    }
+
+    $(".source").click(function (event) {
+        stuffOnLine(parseInt(event.target.id));
+    });
+    $(function () {
+        $("bob2").tablesorter();
+    });
+
     fetchLoggedOnUser();
+
+    $.ajax({
+        type: "GET",
+        url: "/revisionEntries/" + parseInt($("#revisionNumber").html()),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data, status, jqXHR) {
+            for (var i = 0; i < data.feedback.length; i += 1) {
+                var feedbackItem = data.feedback[i];
+
+                if (feedbackItem.type == "issue") {
+                    var issue = new Issue();
+                    issue.refreshFromJSON(feedbackItem);
+                    feedback.addFeedbackItem(issue);
+                } else if (feedbackItem.type == "comment") {
+                    var comment = new FeedbackComment();
+                    comment.refreshFromJSON(feedbackItem);
+                    feedback.addFeedbackItem(comment);
+                }
+            }
+            annotateLines();
+
+            var openLineNumber = $("#openLineNumber").html();
+            if (openLineNumber) {
+                var zeroBasedLineNumber = parseInt(openLineNumber) - 1;
+                console.log("Opening to Line: ", openLineNumber);
+                openLine(zeroBasedLineNumber);
+                window.scrollTo(0, $("#comment-" + zeroBasedLineNumber).position().top - 100);
+            }
+        },
+        error: function (jqXHR, status) {
+            alert("Unable to retrieve information relating to the revision.");
+        }
+    });
 });
 
