@@ -1,30 +1,31 @@
-GET         /                                    controllers.Application.index
-GET         /auth/user                           controllers.Auth.user
-POST        /auth/login                          controllers.Auth.login
-GET         /auth/logout                         controllers.Auth.logout
-GET         /authors                             controllers.Authors.listAsJSON
-GET         /authors/html                        controllers.Authors.listAsHTML
-GET         /authors/:id                         controllers.Authors.show(id: Long)
-PUT         /commentary                          controllers.Commentary.create
-PUT         /commentaryFeedback                  controllers.CommentaryFeedback.create
-PUT         /issues                              controllers.Issues.create
-PUT         /issues/:id/close/:authorID          controllers.Issues.close(id: Long, authorID: Long)
-GET         /issues/:id                          controllers.Issues.show(id:Long)
-PUT         /issuesFeedback                      controllers.IssuesFeedback.create
-GET         /repos                               controllers.Repos.list
-GET         /repos/:id                           controllers.Repos.show(id: Long)
-GET         /repos/:id/refresh                   controllers.Repos.refresh(id: Long)
-GET         /repos/:id/authors                   controllers.Repos.authors(id: Long)
-PUT         /repoAuthors/:id                     controllers.RepoAuthors.update(id: Long)
-GET         /revisions                           controllers.Revisions.list
-GET         /revisions/:id/html                  controllers.Revisions.showAsHTML(id: Long)
-GET         /revisions/:id                       controllers.Revisions.show(id: Long)
-GET         /revisions/:id/start                 controllers.Revisions.startReview(id: Long)
-GET         /revisions/:id/cancel                controllers.Revisions.cancelReview(id: Long)
-GET         /revisions/:id/complete              controllers.Revisions.completeReview(id: Long)
-GET         /revisions/:id/revisionEntries       controllers.Revisions.entries(id: Long)
-GET         /revisionEntries/diff/:id            controllers.RevisionEntries.diffAgainstPreviousRevision(id: Long)
-GET         /revisionEntries/:id                 controllers.RevisionEntries.show(id: Long)
-GET         /revisionEntries/:id/feedback        controllers.RevisionEntries.feedback(id: Long)
+GET         /                                            controllers.Application.index
+GET         /auth/user                                   controllers.Auth.user
+POST        /auth/login                                  controllers.Auth.login
+GET         /auth/logout                                 controllers.Auth.logout
+GET         /authors                                     controllers.Authors.listAsJSON
+GET         /authors/html                                controllers.Authors.listAsHTML
+GET         /authors/:id                                 controllers.Authors.show(id: Long)
+PUT         /commentary                                  controllers.Commentary.create
+PUT         /commentaryFeedback                          controllers.CommentaryFeedback.create
+PUT         /issues                                      controllers.Issues.create
+PUT         /issues/:id/close/:authorID                  controllers.Issues.close(id: Long, authorID: Long)
+GET         /issues/:id                                  controllers.Issues.show(id:Long)
+PUT         /issuesFeedback                              controllers.IssuesFeedback.create
+GET         /repos                                       controllers.Repos.list
+GET         /repos/:id                                   controllers.Repos.show(id: Long)
+GET         /repos/:id/refresh                           controllers.Repos.refresh(id: Long)
+GET         /repos/:id/authors                           controllers.Repos.authors(id: Long)
+PUT         /repoAuthors/:id                             controllers.RepoAuthors.update(id: Long)
+GET         /revisions                                   controllers.Revisions.list
+GET         /revisions/:id/html                          controllers.Revisions.showAsHTML(id: Long)
+GET         /revisions/:id                               controllers.Revisions.show(id: Long)
+GET         /revisions/:id/start                         controllers.Revisions.startReview(id: Long)
+GET         /revisions/:id/cancel                        controllers.Revisions.cancelReview(id: Long)
+GET         /revisions/:id/complete                      controllers.Revisions.completeReview(id: Long)
+GET         /revisions/:id/revisionEntries               controllers.Revisions.entries(id: Long)
+GET         /revisionEntries/diff/:id                    controllers.RevisionEntries.diffAgainstPreviousRevision(id: Long)
+GET         /revisionEntries/diff/:id/:lineNumber        controllers.RevisionEntries.diffAgainstPreviousRevision(id: Long, lineNumber: Long)
+GET         /revisionEntries/:id                         controllers.RevisionEntries.show(id: Long)
+GET         /revisionEntries/:id/feedback                controllers.RevisionEntries.feedback(id: Long)
 
-GET         /assets/*file                        controllers.Assets.at(path="/public", file)
+GET         /assets/*file                                controllers.Assets.at(path="/public", file)
