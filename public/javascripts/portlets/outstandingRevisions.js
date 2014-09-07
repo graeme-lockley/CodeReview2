@@ -1,6 +1,24 @@
 $(document).ready(function () {
     $(function () {
+        var RevisionEntryView = Backbone.View.extend({
+            events: {
+                "click": "selectPath"
+            },
+            selectPath: function () {
+                window.location = ("/revisionEntries/diff/" + this.model.id);
+                return false;
+            }
+        });
+
         var RevisionLineView = Backbone.View.extend({
+            initialize: function (options) {
+                if (options.showFeedback) {
+                    this.model.revisionEntries().forEach(function (entry) {
+                        console.log("entries:", entry);
+                        var x = new RevisionEntryView({model: entry, el: "#" + options.prefix + "-" + entry.id});
+                    });
+                }
+            },
             events: {
                 "click .revisionLogMessage": "selectRevision",
                 "click .repoName": "selectRepo"
@@ -9,7 +27,7 @@ $(document).ready(function () {
                 window.location = ("/revisions/" + this.model.id + "/html");
                 return false;
             },
-            selectRepo: function(event) {
+            selectRepo: function (event) {
                 window.location = ("/repos/" + this.model.repo().id);
                 return false;
             }
@@ -23,10 +41,12 @@ $(document).ready(function () {
             },
             render: function () {
                 var prefix = this.$el.attr("id");
+                var showFeedback = this.showFeedback;
+
                 this.$el.html(_.template(templateOnName("portlets/outstandingRevisions/main.html"), {revisions: this.model, prefix: prefix, showFeedback: this.showFeedback}));
 
                 this.model.forEach(function (revision) {
-                    var x = new RevisionLineView({model: revision, el: "#" + prefix + "-" + revision.id});
+                    var x = new RevisionLineView({model: revision, el: "#" + prefix + "-" + revision.id, prefix: prefix, showFeedback: showFeedback});
                 });
 
                 return this;

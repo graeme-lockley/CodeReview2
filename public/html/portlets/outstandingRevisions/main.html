@@ -2,16 +2,16 @@
     <% revisions.forEach(function(revision) { %>
     <tr id="<%- prefix %>-<%- revision.id %>">
         <td>
-            <span class="repoName"><%- revision.get("repo").name %></span> <%- revision.get("date") %> <%- revision.author() %> <br>
-            <div class="revisionLogMessage"><%- revision.get("logMessage") %></div>
+            <span class="repoName clickTarget"><%- revision.get("repo").name %></span> <%- revision.get("date") %> <%- revision.author() %> <br>
+            <div class="revisionLogMessage clickTarget"><%- revision.get("logMessage") %></div>
             <% if (revision.reviewInProgress()) { %>
                 Reviewer: <%- revision.reviewAuthor().get("name") %>
             <% } %>
             <% if (showFeedback) { %>
                 <br>
                 <ul>
-                <%  revision.revisionEntries().forEach(function(entry) { %>
-                    <li> <%- entry.get("entry").path %> </li>
+                <% revision.revisionEntries().forEach(function(entry) { %>
+                    <li class="revisionEntryPath clickTarget" id="<%- prefix %>-<%- entry.id %>"> <%- entry.get("entry").path %> </li>
                     <% if (entry.hasFeedback()) { %>
                         <ul>
                         <% entry.feedback().forEach(function(feedback) { %>
@@ -32,7 +32,7 @@
                         <% }); %>
                         </ul>
                     <% } %>
-                <%  }); %>
+                <% }); %>
                 </ul>
             <% } %>
         </td>
