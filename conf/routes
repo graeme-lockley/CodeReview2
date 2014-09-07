@@ -24,7 +24,7 @@ GET         /revisions/:id/cancel                        controllers.Revisions.c
 GET         /revisions/:id/complete                      controllers.Revisions.completeReview(id: Long)
 GET         /revisions/:id/revisionEntries               controllers.Revisions.entries(id: Long)
 GET         /revisionEntries/diff/:id                    controllers.RevisionEntries.diffAgainstPreviousRevision(id: Long)
-GET         /revisionEntries/diff/:id/:lineNumber        controllers.RevisionEntries.diffAgainstPreviousRevision(id: Long, lineNumber: Long)
+GET         /revisionEntries/diff/:id/:lineNumber        controllers.RevisionEntries.diffAgainstPreviousRevisionOnLine(id: Long, lineNumber: Long)
 GET         /revisionEntries/:id                         controllers.RevisionEntries.show(id: Long)
 GET         /revisionEntries/:id/feedback                controllers.RevisionEntries.feedback(id: Long)
 

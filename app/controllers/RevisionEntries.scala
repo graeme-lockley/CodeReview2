@@ -17,7 +17,7 @@ object RevisionEntries extends Controller {
     }
   }
 
-  def diffAgainstPreviousRevision(id: Long, lineNumber: Long) = Action {
+  def diffAgainstPreviousRevisionOnLine(id: Long, lineNumber: Long) = Action {
     implicit request => {
       val secondRevisionEntry = RevisionEntry.find(id)
       val firstRevisionEntry = if (secondRevisionEntry.isEmpty) None else secondRevisionEntry.get.previousRevisionEntry()
