@@ -11,18 +11,16 @@
                 <br>
                 <ul>
                 <% revision.revisionEntries().forEach(function(entry) { %>
-                    <li class="revisionEntryPath clickTarget" id="<%- prefix %>-<%- entry.id %>"> <%- entry.get("entry").path %> </li>
+                    <li id="<%- prefix %>-<%- entry.id %>"><span class="revisionEntryPath clickTarget"><%- entry.get("entry").path %></span>
                     <% if (entry.hasFeedback()) { %>
                         <ul>
                         <% entry.feedback().forEach(function(feedback) { %>
-                            <li>
+                            <li id="<%- prefix %>-<%- feedback.id %>">
                                 <%- feedback.lineNumber() %>: <%- feedback.comment() %>
-                                <% console.log(feedback); %>
                                 <% if (feedback.hasResponses()) { %>
                                     <ul>
                                         <% feedback.responses().forEach(function(response) { %>
                                             <%- response.comment() %>
-                                            <% console.log(response); %>
                                         <% }); %>
                                     </ul>
                                 <% } else { %>
@@ -32,6 +30,7 @@
                         <% }); %>
                         </ul>
                     <% } %>
+                    </li>
                 <% }); %>
                 </ul>
             <% } %>

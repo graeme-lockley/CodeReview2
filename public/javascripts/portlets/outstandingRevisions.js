@@ -1,8 +1,23 @@
 $(document).ready(function () {
     $(function () {
-        var RevisionEntryView = Backbone.View.extend({
+        var FeedbackItemView = Backbone.View.extend({
             events: {
-                "click": "selectPath"
+                "click": "select"
+            },
+            select: function(event) {
+                window.location = ("/revisionEntries/diff/" + this.model.revisionEntry().id + "/" + this.model.lineNumber());
+                return false;
+            }
+        });
+
+        var RevisionEntryView = Backbone.View.extend({
+            initialize: function (options) {
+                this.model.feedback().forEach(function (feedbackItem) {
+                    var x = new FeedbackItemView({model: feedbackItem, el: "#" + options.prefix + "-" + feedbackItem.id});
+                });
+            },
+            events: {
+                "click .revisionEntryPath": "selectPath"
             },
             selectPath: function () {
                 window.location = ("/revisionEntries/diff/" + this.model.id);
@@ -14,8 +29,7 @@ $(document).ready(function () {
             initialize: function (options) {
                 if (options.showFeedback) {
                     this.model.revisionEntries().forEach(function (entry) {
-                        console.log("entries:", entry);
-                        var x = new RevisionEntryView({model: entry, el: "#" + options.prefix + "-" + entry.id});
+                        var x = new RevisionEntryView({model: entry, el: "#" + options.prefix + "-" + entry.id, prefix: options.prefix});
                     });
                 }
             },
