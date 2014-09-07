@@ -52,6 +52,9 @@ var Revision = Backbone.Model.extend({
             return this.get("author").author.name;
         }
     },
+    repo: function() {
+        return this.get("repo");
+    },
     revisionEntries: function() {
         var entries = new RevisionEntries();
         entries.url = this.url() + "/revisionEntries";

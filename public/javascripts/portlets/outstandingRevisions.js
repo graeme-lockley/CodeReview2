@@ -2,11 +2,16 @@ $(document).ready(function () {
     $(function () {
         var RevisionLineView = Backbone.View.extend({
             events: {
-                "click": "clickButton"
+                "click .revisionLogMessage": "selectRevision",
+                "click .repoName": "selectRepo"
             },
-            clickButton: function (event) {
+            selectRevision: function (event) {
                 console.log("/revisions/" + this.model.id + "/html");
                 window.location = ("http://localhost:9000/revisions/" + this.model.id + "/html");
+                return false;
+            },
+            selectRepo: function(event) {
+                window.location = ("http://localhost:9000/repos/" + this.model.repo().id);
                 return false;
             }
         });
