@@ -10,3 +10,7 @@ body {
     position: static;
     margin-bottom: 20px;
 }
+
+.clickTarget {
+    color: darkblue;
+}

@@ -1,4 +1,4 @@
-@(firstRevisionEntry: Option[models.RevisionEntry], secondRevisionEntry: Option[models.RevisionEntry], difference: services.RevisionEntryDifference)(implicit request: play.api.mvc.RequestHeader)
+@(firstRevisionEntry: Option[models.RevisionEntry], secondRevisionEntry: Option[models.RevisionEntry], difference: services.RevisionEntryDifference, openLineNumber: Option[Long])(implicit request: play.api.mvc.RequestHeader)
 
 <style>
 td.linenum {
@@ -128,6 +128,9 @@ padding : 5 px ;
 <!--  -->
 
 @main("Differences", Some(views.BackSelection("Revision " + secondRevisionEntry.map(_.revision.id).getOrElse(UNKNOWN_REVISION_ID) + " - " + secondRevisionEntry.map(_.entry.repo.name).getOrElse(""), "/revisions/" + secondRevisionEntry.map(_.revision.id).getOrElse(UNKNOWN_REVISION_ID) + "/html"))) {
+    @if(openLineNumber.isDefined) {
+        <div id="openLineNumber">@{openLineNumber.get}</div>
+    }
     <div class="page-header">
         <h1>Differences</h1>
 

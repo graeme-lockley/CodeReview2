@@ -2,10 +2,37 @@
     <% revisions.forEach(function(revision) { %>
     <tr id="<%- prefix %>-<%- revision.id %>">
         <td>
-            <%- revision.get("repo").name %> <%- revision.get("date") %> <%- revision.author() %> <br>
-            <a href="#"><%- revision.get("logMessage") %></a>
+            <span class="repoName clickTarget"><%- revision.get("repo").name %></span> <%- revision.get("date") %> <%- revision.author() %> <br>
+            <div class="revisionLogMessage clickTarget"><%- revision.get("logMessage") %></div>
             <% if (revision.reviewInProgress()) { %>
-            <br> Reviewer: <%- revision.reviewAuthor().get("name") %>
+                Reviewer: <%- revision.reviewAuthor().get("name") %>
+            <% } %>
+            <% if (showFeedback) { %>
+                <br>
+                <ul>
+                <% revision.revisionEntries().forEach(function(entry) { %>
+                    <li id="<%- prefix %>-<%- entry.id %>"><span class="revisionEntryPath clickTarget"><%- entry.get("entry").path %></span>
+                    <% if (entry.hasFeedback()) { %>
+                        <ul>
+                        <% entry.feedback().forEach(function(feedback) { %>
+                            <li id="<%- prefix %>-<%- feedback.id %>">
+                                <%- feedback.lineNumber() %>: <%- feedback.comment() %>
+                                <% if (feedback.hasResponses()) { %>
+                                    <ul>
+                                        <% feedback.responses().forEach(function(response) { %>
+                                            <%- response.comment() %>
+                                        <% }); %>
+                                    </ul>
+                                <% } else { %>
+                                    (no responses)
+                                <% } %>
+                            </li>
+                        <% }); %>
+                        </ul>
+                    <% } %>
+                    </li>
+                <% }); %>
+                </ul>
             <% } %>
         </td>
     </tr>

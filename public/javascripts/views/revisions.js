@@ -36,9 +36,9 @@ $(document).ready(function () {
                 return this;
             },
             events: {
-                "click .verb": "clickButton"
+                "click .verb": "selectRevision"
             },
-            clickButton: function (event) {
+            selectRevision: function (event) {
                 this.model.verb($(event.target).html());
             }
         });

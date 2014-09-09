@@ -13,7 +13,18 @@ object RevisionEntries extends Controller {
 
       val differences = RevisionEntryDifference(firstRevisionEntry, secondRevisionEntry)
 
-      Ok(views.html.revisionEntries.diff(firstRevisionEntry, secondRevisionEntry, differences))
+      Ok(views.html.revisionEntries.diff(firstRevisionEntry, secondRevisionEntry, differences, None))
+    }
+  }
+
+  def diffAgainstPreviousRevisionOnLine(id: Long, lineNumber: Long) = Action {
+    implicit request => {
+      val secondRevisionEntry = RevisionEntry.find(id)
+      val firstRevisionEntry = if (secondRevisionEntry.isEmpty) None else secondRevisionEntry.get.previousRevisionEntry()
+
+      val differences = RevisionEntryDifference(firstRevisionEntry, secondRevisionEntry)
+
+      Ok(views.html.revisionEntries.diff(firstRevisionEntry, secondRevisionEntry, differences, Some(lineNumber)))
     }
   }
 
@@ -26,8 +37,7 @@ object RevisionEntries extends Controller {
 
   def feedback(id: Long) = Action {
     implicit request => {
-      var revisionEntry = RevisionEntry.get(id);
-
+      val revisionEntry = RevisionEntry.get(id);
 
       Ok(Json.stringify(feedbackWriter.write(revisionEntry.feedback())))
     }

@@ -52,6 +52,15 @@ var Revision = Backbone.Model.extend({
             return this.get("author").author.name;
         }
     },
+    repo: function () {
+        return this.get("repo");
+    },
+    revisionEntries: function () {
+        var entries = new RevisionEntries();
+        entries.url = this.url() + "/revisionEntries";
+        entries.fetch({async: false});
+        return entries;
+    },
     verbs: function () {
         return this.get("verbs");
     },
@@ -90,12 +99,65 @@ var Revisions = Backbone.Collection.extend({
     }
 });
 
+var RevisionEntry = Backbone.Model.extend({
+    urlRoot: '/revisionEntries',
+    showStuff: function () {
+        console.log(this.attributes);
+    },
+    hasFeedback: function () {
+        return this.get("feedback").length > 0;
+    },
+    feedback: function () {
+        return new Feedback(this.get("feedback"), {revisionEntry: this});
+    }
+});
+
+var RevisionEntries = Backbone.Collection.extend({
+    model: RevisionEntry,
+});
+
 var FeedbackItem = Backbone.Model.extend({
-    urlRoot: "/feedback"
+    urlRoot: "/feedback",
+
+    revisionEntry: function () {
+        return this.get("revisionEntry");
+    },
+    comment: function () {
+        return this.get("comment");
+    },
+    lineNumber: function () {
+        return this.get("lineNumber") + 1;
+    },
+    isIssue: function () {
+        return this.get("type") === "issue";
+    },
+    hasResponses: function () {
+        return this.get("responses").length > 0;
+    },
+    responses: function () {
+        return new FeedbackResponses(this.get("responses"));
+    }
 });
 
 var Feedback = Backbone.Collection.extend({
-    model: FeedbackItem
+    model: FeedbackItem,
+
+    initialize: function (models, options) {
+        _.forEach(models, function (feedbackItem) {
+            feedbackItem.revisionEntry = options.revisionEntry;
+        });
+        return this;
+    }
+});
+
+var FeedbackResponse = Backbone.Model.extend({
+    comment: function () {
+        return this.get("comment");
+    }
+});
+
+var FeedbackResponses = Backbone.Collection.extend({
+    model: FeedbackResponse
 });
 
 function setHtml(domElement, templateName, templateState) {
