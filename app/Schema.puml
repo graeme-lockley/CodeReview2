@@ -1,0 +1,21 @@
+@startuml
+
+class Author
+class Content
+class Feedback
+class Repo
+class Revisions
+class RevisionEntries
+class RepoAuthor
+
+Repo "1" --* "*" Revisions
+Repo "1" --* "*" RepoAuthor
+RepoAuthor "0..1" --* "*" Revisions
+RevisionEntries "1" --* "*" Feedback
+Revisions "1" --* "*" RevisionEntries
+Content "0..1" --* "1" RevisionEntries
+Author "1" --* "*" Feedback
+Author "0..1" --* "*" RepoAuthor
+Feedback "0..1" --* "*" Feedback
+
+@enduml
