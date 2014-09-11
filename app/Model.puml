@@ -1,0 +1,33 @@
+@startuml
+
+abstract Feedback
+
+Feedback <|-- Commentary
+Feedback <|-- Issue
+
+Author "1" --* "*" Feedback
+Author "1" --* "*" RepoAuthor
+RepoAuthor "0..1" --* "*" Revision
+Repo "1" --* "*" RepoAuthor
+Repo "1" --* "*" Revision
+Repo "1" --* "*" Entry
+Revision "1" --* "*" RevisionEntry
+RevisionEntry "1" --* "*" Feedback
+
+RevisionEntry <|-- AddEntry
+RevisionEntry <|-- DeleteEntry
+RevisionEntry <|-- ModifiedEntry
+RevisionEntry <|-- ReplacedEntry
+
+Entry <|-- NoneEntry
+Entry <|-- FileEntry
+Entry <|-- DirEntry
+Entry <|-- UnknownEntry
+
+AddEntry --> Entry
+DeleteEntry --> Entry
+ModifiedEntry --> Entry
+ReplacedEntry --> Entry
+
+
+@enduml
