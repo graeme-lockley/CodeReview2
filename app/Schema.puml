@@ -1,21 +1,21 @@
 @startuml
 
-class Author
-class Content
-class Feedback
-class Repo
-class Revisions
-class RevisionEntries
-class RepoAuthor
+class AUTHORS
+class REVISION_ENTRIES_CONTENT
+class REVISION_ENTRY_FEEDBACK
+class REPOS
+class REVISIONS
+class REVISION_ENTRIES
+class REPO_AUTHORS
 
-Repo "1" --* "*" Revisions
-Repo "1" --* "*" RepoAuthor
-RepoAuthor "0..1" --* "*" Revisions
-RevisionEntries "1" --* "*" Feedback
-Revisions "1" --* "*" RevisionEntries
-Content "0..1" --* "1" RevisionEntries
-Author "1" --* "*" Feedback
-Author "0..1" --* "*" RepoAuthor
-Feedback "0..1" --* "*" Feedback
+REPOS "1" --* "*" REVISIONS
+REPOS "1" --* "*" REPO_AUTHORS
+REPO_AUTHORS "0..1" --* "*" REVISIONS
+REVISION_ENTRIES "1" --* "*" REVISION_ENTRY_FEEDBACK
+REVISIONS "1" --* "*" REVISION_ENTRIES
+REVISION_ENTRIES_CONTENT "0..1" --* "1" REVISION_ENTRIES
+AUTHORS "1" --* "*" REVISION_ENTRY_FEEDBACK
+AUTHORS "0..1" --* "*" REPO_AUTHORS
+REVISION_ENTRY_FEEDBACK "0..1" --* "*" REVISION_ENTRY_FEEDBACK
 
 @enduml
