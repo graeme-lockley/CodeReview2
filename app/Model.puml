@@ -1,9 +1,6 @@
 @startuml
 
-abstract Feedback
-
-Feedback <|-- Commentary
-Feedback <|-- Issue
+Feedback "1" --* "*" Response
 
 Author "1" --* "*" Feedback
 Author "1" --* "*" RepoAuthor
