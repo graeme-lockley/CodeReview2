@@ -44,10 +44,6 @@ object Feedback {
     feedback
   }
 
-  def all(issue: Feedback): Traversable[Response] = inTransaction {
-    DBRevisionEntryFeedback.childrenByDate(issue.id).map(e => Response(e.id, e.logMessage, Author.get(e.authorID), e.date, issue))
-  }
-
   def dbToModel(status: DBRevisionEntryFeedbackStatus): FeedbackStatus = status match {
     case DBRevisionEntryFeedbackStatus.Open => models.Open()
     case DBRevisionEntryFeedbackStatus.Closed => models.Closed()
@@ -62,14 +58,14 @@ object Feedback {
 case class Response(id: ResponseID, comment: String, author: Author, date: Date, feedback: Feedback)
 
 object Response {
-  def create(commentary: models.Feedback, comment: String, author: models.Author, date: Date): models.Response = inTransaction {
-    val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(UNKNOWN_REVISION_ENTRY_FEEDBACK_ID, Some(commentary.id), author.id, commentary.revisionEntry.id, commentary.lineNumber, comment, new Timestamp(date.getTime), DBRevisionEntryFeedbackType.CommentaryResponse, DBRevisionEntryFeedbackStatus.Closed)
+  def create(feedback: models.Feedback, comment: String, author: models.Author, date: Date): models.Response = inTransaction {
+    val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(UNKNOWN_REVISION_ENTRY_FEEDBACK_ID, Some(feedback.id), author.id, feedback.revisionEntry.id, feedback.lineNumber, comment, new Timestamp(date.getTime), DBRevisionEntryFeedbackType.CommentaryResponse, DBRevisionEntryFeedbackStatus.Closed)
     val insertDBRevisionEntryFeedback = Library.revisionEntryComment.insert(dbRevisionEntryFeedback)
-    Response(insertDBRevisionEntryFeedback.id, comment, author, date, commentary)
+    Response(insertDBRevisionEntryFeedback.id, comment, author, date, feedback)
   }
 
-  def all(commentary: Feedback): Traversable[Response] = inTransaction {
-    DBRevisionEntryFeedback.childrenByDate(commentary.id).map(e => Response(e.id, e.logMessage, Author.get(e.authorID), e.date, commentary))
+  def all(feedback: Feedback): Traversable[Response] = inTransaction {
+    DBRevisionEntryFeedback.childrenByDate(feedback.id).map(e => Response(e.id, e.logMessage, Author.get(e.authorID), e.date, feedback))
   }
 }
 
