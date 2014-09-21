@@ -1,7 +1,6 @@
 package controllers
 
 import models.RevisionEntry
-import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 import services.RevisionEntryDifference
 
@@ -32,14 +31,14 @@ object RevisionEntries extends Controller {
     request =>
       val revisionEntry = RevisionEntry.find(id).get
 
-      Ok(Json.stringify(revisionEntryWriter.write(revisionEntry)))
+      Ok(revisionEntryWriter.write(revisionEntry))
   }
 
   def feedback(id: Long) = Action {
     implicit request => {
       val revisionEntry = RevisionEntry.get(id)
 
-      Ok(Json.stringify(feedbackWriter.write(revisionEntry.feedback())))
+      Ok(feedbackWriter.write(revisionEntry.feedback()))
     }
   }
 }

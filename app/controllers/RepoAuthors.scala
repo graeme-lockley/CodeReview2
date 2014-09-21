@@ -8,6 +8,6 @@ object RepoAuthors extends Controller {
 			val repoAuthor = repoAuthorReader.read(request.body)
 			repoAuthor.save()
 
-			Ok("{code: 0}")
+			Ok(repoAuthorWriter.write(repoAuthor))
 	}
 }

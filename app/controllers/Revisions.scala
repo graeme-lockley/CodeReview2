@@ -3,7 +3,6 @@ package controllers
 import models.Revision
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.BinaryOperatorNodeLogicalBoolean
-import play.api.libs.json.Json
 import play.api.mvc.{Action, RequestHeader, SimpleResult}
 import ports.{DBReviewStatus, DBRevision}
 
@@ -26,7 +25,7 @@ object Revisions extends AuthController {
         else
           Revision.all(queries.get(query.get).get)
 
-      Ok(Json.stringify(revisionWriter.write(all)))
+      Ok(revisionWriter.write(all))
   }
 
   def showAsHTML(revisionID: Long) = Action {
@@ -69,13 +68,13 @@ object Revisions extends AuthController {
       .addIf(revision.canComplete(loggedOnUser), "Cancel", routes.Revisions.cancelReview(revision.id))
       .addIf(revision.canComplete(loggedOnUser), "Complete", routes.Revisions.completeReview(revision.id))
       .create
-    Ok(Json.stringify(revisionWriter.write(revision, verbs)))
+    Ok(revisionWriter.write(revision, verbs))
   }
 
   def entries(id: Long) = Action {
     implicit request =>
       val revision = Revision.get(id)
 
-      Ok(Json.stringify(revisionEntryWriter.write(revision.revisionEntries)))
+      Ok(revisionEntryWriter.write(revision.revisionEntries))
   }
 }
