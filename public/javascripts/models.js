@@ -113,7 +113,7 @@ var RevisionEntry = Backbone.Model.extend({
 });
 
 var RevisionEntries = Backbone.Collection.extend({
-    model: RevisionEntry,
+    model: RevisionEntry
 });
 
 var FeedbackItem = Backbone.Model.extend({

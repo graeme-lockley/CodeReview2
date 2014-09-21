@@ -180,18 +180,18 @@ FeedbackCommentDraft.prototype.mustAnnotate = function () {
     return false;
 };
 FeedbackCommentDraft.prototype.commitDraft = function (revisionEntryID, comment, successContinuation, failureContinuation) {
-    var content = JSON.stringify({"comment": comment, "authorID": loggedOnUser.id, "revisionEntryID": revisionEntryID, "lineNumber": this.lineNumber});
+    var content = JSON.stringify({"comment": comment, "authorID": loggedOnUser.id, "revisionEntryID": revisionEntryID, "lineNumber": this.lineNumber, "status": "closed"});
 
     console.log(content);
 
     $.ajax({
         type: "PUT",
-        url: "/commentary",
+        url: "/feedback",
         data: content,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data, status, jqXHR) {
-            successContinuation(data.commentaryID, data.when);
+            successContinuation(data.id, data.date);
         },
         error: function (jqXHR, status) {
             failureContinuation(status);
@@ -213,18 +213,18 @@ IssueDraft.prototype.mustAnnotate = function () {
     return false;
 };
 IssueDraft.prototype.commitDraft = function (revisionEntryID, comment, successContinuation, failureContinuation) {
-    var content = JSON.stringify({"comment": comment, "authorID": loggedOnUser.id, "revisionEntryID": revisionEntryID, "lineNumber": this.lineNumber});
+    var content = JSON.stringify({"comment": comment, "authorID": loggedOnUser.id, "revisionEntryID": revisionEntryID, "lineNumber": this.lineNumber, "status": "open"});
 
     console.log(content);
 
     $.ajax({
         type: "PUT",
-        url: "/issues",
+        url: "/feedback",
         data: content,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data, status, jqXHR) {
-            successContinuation(data.issueID, data.when);
+            successContinuation(data.id, data.when);
         },
         error: function (jqXHR, status) {
             failureContinuation(status);
@@ -313,7 +313,7 @@ Issue.prototype.closeIssue = function () {
     var issue = this;
     $.ajax({
         type: "PUT",
-        url: "/issues/" + issue.dbid + "/close/" + loggedOnUser.id,
+        url: "/feedback/" + issue.dbid + "/close/" + loggedOnUser.id,
         data: "{}",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -331,7 +331,7 @@ Issue.prototype.refresh = function () {
     var issue = this;
     $.ajax({
         type: "GET",
-        url: "/issues/" + issue.dbid,
+        url: "/feedback/" + issue.dbid,
         data: "{}",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -398,18 +398,18 @@ DraftFeedbackOnComment.prototype.item = function () {
     return this.comment;
 };
 DraftFeedbackOnComment.prototype.commitDraft = function (comment, successContinuation, failureContinuation) {
-    var content = JSON.stringify({"comment": comment, "authorID": loggedOnUser.id, "commentID": this.item().dbid});
+    var content = JSON.stringify({"comment": comment, "authorID": loggedOnUser.id, "feedbackID": this.item().dbid});
 
     console.log(content);
 
     $.ajax({
         type: "PUT",
-        url: "/commentaryFeedback",
+        url: "/responses",
         data: content,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data, status, jqXHR) {
-            successContinuation(data.commentaryResponseID, data.when);
+            successContinuation(data.id, data.when);
         },
         error: function (jqXHR, status) {
             failureContinuation(status);
@@ -434,18 +434,18 @@ DraftFeedbackOnIssue.prototype.item = function () {
     return this.issue;
 };
 DraftFeedbackOnIssue.prototype.commitDraft = function (comment, successContinuation, failureContinuation) {
-    var content = JSON.stringify({"comment": comment, "authorID": loggedOnUser.id, "issueID": this.item().dbid});
+    var content = JSON.stringify({"comment": comment, "authorID": loggedOnUser.id, "feedbackID": this.item().dbid});
 
     console.log(content);
 
     $.ajax({
         type: "PUT",
-        url: "/issuesFeedback",
+        url: "/responses",
         data: content,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data, status, jqXHR) {
-            successContinuation(data.issueResponseID, data.when);
+            successContinuation(data.id, data.when);
         },
         error: function (jqXHR, status) {
             failureContinuation(status);
@@ -734,12 +734,12 @@ CommentLineEntry.prototype.save = function () {
 
     $.ajax({
         type: "PUT",
-        url: "/commentary",
+        url: "/feedback",
         data: content,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data, status, jqXHR) {
-            var commentLineComment = new CommentLineComment(commentLineEntry.commentLine, commentLineEntry.sequenceNumber, 123, commentLineEntry.textContent(), loggedOnUser.name, "16 January 2015");
+            var commentLineComment = new CommentLineComment(commentLineEntry.commentLine, commentLineEntry.sequenceNumber, 123, commentLineEntry.textContent(), loggedOnUser.name, data.date);
             commentLineComment.replaceCommentLineEntry(commentLineEntry);
         },
 

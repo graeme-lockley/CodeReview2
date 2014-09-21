@@ -37,7 +37,7 @@ object RevisionEntries extends Controller {
 
   def feedback(id: Long) = Action {
     implicit request => {
-      val revisionEntry = RevisionEntry.get(id);
+      val revisionEntry = RevisionEntry.get(id)
 
       Ok(Json.stringify(feedbackWriter.write(revisionEntry.feedback())))
     }

@@ -5,12 +5,11 @@ GET         /auth/logout                                 controllers.Auth.logout
 GET         /authors                                     controllers.Authors.listAsJSON
 GET         /authors/html                                controllers.Authors.listAsHTML
 GET         /authors/:id                                 controllers.Authors.show(id: Long)
-PUT         /commentary                                  controllers.Commentary.create
-PUT         /commentaryFeedback                          controllers.CommentaryFeedback.create
-PUT         /issues                                      controllers.Issues.create
-PUT         /issues/:id/close/:authorID                  controllers.Issues.close(id: Long, authorID: Long)
-GET         /issues/:id                                  controllers.Issues.show(id:Long)
-PUT         /issuesFeedback                              controllers.IssuesFeedback.create
+#GET         /feedback                                    controllers.Feedback.list
+PUT         /feedback                                    controllers.Feedback.create
+PUT         /feedback/:id/close/:authorID                controllers.Feedback.close(id: Long, authorID: Long)
+GET         /feedback/:id                                controllers.Feedback.show(id:Long)
+PUT         /responses                                   controllers.Response.create
 GET         /repos                                       controllers.Repos.list
 GET         /repos/:id                                   controllers.Repos.show(id: Long)
 GET         /repos/:id/refresh                           controllers.Repos.refresh(id: Long)

@@ -56,7 +56,7 @@ sealed trait RevisionEntry {
 
   def operation: String
 
-  override def toString: String = (revisionID, entry, operation).toString
+  override def toString: String = (revisionID, entry, operation).toString()
 
   def revisionNumber: RevisionNumber = {
     Revision.find(revisionID) match {
@@ -90,9 +90,7 @@ sealed trait RevisionEntry {
 
   def content(): String = RevisionEntry.content(id)
 
-  def addCommentary(lineNumber: Option[LineNumberType], comment: String, author: Author): Commentary = Commentary.create(this, lineNumber, comment, author, new java.util.Date())
-
-  def addIssue(lineNumber: Option[LineNumberType], comment: String, author: Author): Issue = Issue.create(this, lineNumber, comment, author, new java.util.Date())
+  def addFeedback(lineNumber: Option[LineNumberType], comment: String, author: Author, status: FeedbackStatus): Feedback = Feedback.create(this, lineNumber, comment, author, new java.util.Date(), status)
 
   def feedback(): Traversable[Feedback] = RevisionEntry.feedback(this)
 }
@@ -113,11 +111,7 @@ object RevisionEntry {
 
   def feedback(revisionEntry: RevisionEntry): Traversable[Feedback] = inTransaction {
     DBRevisionEntryFeedback.directRevisionEntryFeedback(revisionEntry.id).map {
-      e =>
-        if (e.feedbackType == DBRevisionEntryFeedbackType.Commentary)
-          Commentary(e.id, e.logMessage, Author.get(e.authorID), e.date, revisionEntry, e.lineNumber)
-        else
-          Issue(e.id, e.logMessage, Author.get(e.authorID), e.date, revisionEntry, e.lineNumber, Feedback.dbToModel(e.status))
+      e => Feedback(e.id, e.logMessage, Author.get(e.authorID), e.date, revisionEntry, e.lineNumber, Feedback.dbToModel(e.status))
     }
   }
 
@@ -252,7 +246,7 @@ class Revision(val id: RevisionID, val repo: Repo, val revisionNumber: RevisionN
 }
 
 object Revision {
-  def all(function: (DBRevisionEntryFeedback) => Any) = ???
+  def all(filter: (DBRevisionEntryFeedback) => Any) = ???
 
   def apply(id: RevisionID, repo: Repo, revisionNumber: RevisionNumber, repoAuthor: Option[RepoAuthor], timestamp: Date, logMessage: String, review: Review): Revision = {
     new Revision(id, repo, revisionNumber, repoAuthor, timestamp, logMessage, review)
@@ -265,11 +259,10 @@ object Revision {
     var repos: Map[RepoID, Repo] = Map()
     def getRepo(repoID: RepoID): Repo = {
       repos.get(repoID) match {
-        case None => {
+        case None =>
           val repo = Repo.get(repoID)
           repos = repos.+((repoID, repo))
           repo
-        }
         case Some(repo) => repo
       }
     }
@@ -280,11 +273,10 @@ object Revision {
     var repos: Map[RepoID, Repo] = Map()
     def getRepo(repoID: RepoID): Repo = {
       repos.get(repoID) match {
-        case None => {
+        case None =>
           val repo = Repo.get(repoID)
           repos = repos.+((repoID, repo))
           repo
-        }
         case Some(repo) => repo
       }
     }

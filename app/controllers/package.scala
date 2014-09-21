@@ -1,7 +1,7 @@
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import models.{Issue, IssueResponse, _}
+import models._
 import play.api.libs.json.{JsObject, JsString, Json, _}
 
 package object controllers {
@@ -37,10 +37,7 @@ package object controllers {
       "id" -> revisionEntry.id,
       "entry" -> write(revisionEntry.entry),
       "operation" -> revisionEntry.operation,
-      "feedback" -> revisionEntry.feedback().map {
-        case c: Commentary => commentaryWriter.write(c)
-        case i: Issue => issueWriter.write(i)
-      }
+      "feedback" -> revisionEntry.feedback().map { f => feedbackWriter.write(f)}
     )
 
     def write(revisionEntries: Traversable[RevisionEntry]): JsValue = Json.toJson(revisionEntries.map(revisionEntry => write(revisionEntry)))
@@ -65,55 +62,27 @@ package object controllers {
     }
   }
 
-  val commentaryWriter = new {
-    def write(commentary: Commentary): JsObject = Json.obj(
-      "type" -> "comment",
-      "id" -> commentary.id,
-      "comment" -> commentary.comment,
-      "author" -> authorWriter.write(commentary.author),
-      "date" -> dateWriter.write(commentary.date),
-      "responses" -> commentary.responses().map(x => commentaryResponseWriter.write(x)),
-      "lineNumber" -> commentary.lineNumber
-    )
-  }
-
-  val commentaryResponseWriter = new {
-    def write(commentaryResponse: CommentaryResponse): JsObject = Json.obj(
-      "id" -> commentaryResponse.id,
-      "comment" -> commentaryResponse.comment,
-      "author" -> authorWriter.write(commentaryResponse.author),
-      "date" -> dateWriter.write(commentaryResponse.date)
-    )
-  }
-
   val feedbackWriter = new {
-    def write(feedback: Traversable[Feedback]): JsValue = Json.toJson(feedback.map {
-      case issue: Issue => issueWriter.write(issue)
-      case issueResponse: IssueResponse => issueResponseWriter.write(issueResponse)
-      case commentary: Commentary => commentaryWriter.write(commentary)
-      case commentaryResponse: CommentaryResponse => commentaryResponseWriter.write(commentaryResponse)
-    })
-  }
-
-  val issueWriter = new {
-    def write(issue: Issue): JsObject = Json.obj(
+    def write(feedback: Feedback): JsObject = Json.obj(
       "type" -> "issue",
-      "id" -> issue.id,
-      "comment" -> issue.comment,
-      "author" -> authorWriter.write(issue.author),
-      "date" -> dateWriter.write(issue.date),
-      "responses" -> issue.responses().map(x => issueResponseWriter.write(x)),
-      "lineNumber" -> issue.lineNumber,
-      "status" -> issueStatusWriter.write(issue.status)
+      "id" -> feedback.id,
+      "comment" -> feedback.comment,
+      "author" -> authorWriter.write(feedback.author),
+      "date" -> dateWriter.write(feedback.date),
+      "responses" -> feedback.responses().map(x => responseWriter.write(x)),
+      "lineNumber" -> feedback.lineNumber,
+      "status" -> issueStatusWriter.write(feedback.status)
     )
+
+    def write(feedback: Traversable[Feedback]): JsValue = Json.toJson(feedback.map { r => write(r)})
   }
 
-  val issueResponseWriter = new {
-    def write(issueResponse: IssueResponse): JsObject = Json.obj(
-      "id" -> issueResponse.id,
-      "comment" -> issueResponse.comment,
-      "author" -> authorWriter.write(issueResponse.author),
-      "date" -> dateWriter.write(issueResponse.date)
+  val responseWriter = new {
+    def write(response: Response): JsObject = Json.obj(
+      "id" -> response.id,
+      "comment" -> response.comment,
+      "author" -> authorWriter.write(response.author),
+      "date" -> dateWriter.write(response.date)
     )
   }
 
@@ -184,7 +153,7 @@ package object controllers {
   }
 
   val issueStatusWriter = new {
-    def write(issueStatus: IssueStatus): JsString = issueStatus match {
+    def write(issueStatus: FeedbackStatus): JsString = issueStatus match {
       case Open() => JsString("Open")
       case Closed() => JsString("Closed")
     }
