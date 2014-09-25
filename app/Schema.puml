@@ -1,6 +1,7 @@
 @startuml
 
 class AUTHORS
+class EVENTS
 class REVISION_ENTRIES_CONTENT
 class REVISION_ENTRY_FEEDBACK
 class REPOS

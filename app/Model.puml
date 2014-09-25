@@ -26,5 +26,6 @@ DeleteEntry --> Entry
 ModifiedEntry --> Entry
 ReplacedEntry --> Entry
 
+class Event
 
 @enduml
