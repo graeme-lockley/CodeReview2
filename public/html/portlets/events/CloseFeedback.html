@@ -1,0 +1,18 @@
+<td>
+    <%
+    var closingAuthor = event.author();
+    var feedbackItem = event.stateFeedbackItem();
+    var revisionEntry = feedbackItem.revisionEntry();
+    var revision = feedbackItem.revision();
+    %>
+    <%- event.get("when") %>: <%- closingAuthor.name() %> closed feedback <br>
+    <dl>
+        <dt>Feedback Comment</dt>
+        <di><%- feedbackItem.comment() %></di>
+        <dt>File</dt>
+        <di><%- revisionEntry.entry().path %> line <%- feedbackItem.lineNumber() %></di>
+        <dt>Message</dt>
+        <di><%- revision.repo().name %>: <%- revision.logMessage() %></di>
+    </dl>
+</td>
+

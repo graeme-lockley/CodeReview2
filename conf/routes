@@ -5,7 +5,7 @@ GET         /auth/logout                                 controllers.Auth.logout
 GET         /authors                                     controllers.Authors.listAsJSON
 GET         /authors/html                                controllers.Authors.listAsHTML
 GET         /authors/:id                                 controllers.Authors.show(id: Long)
-#GET         /feedback                                    controllers.Feedback.list
+GET         /events                                      controllers.Events.list
 PUT         /feedback                                    controllers.Feedback.create
 PUT         /feedback/:id/close/:authorID                controllers.Feedback.close(id: Long, authorID: Long)
 GET         /feedback/:id                                controllers.Feedback.show(id:Long)

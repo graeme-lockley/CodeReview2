@@ -1,0 +1,23 @@
+<td>
+    <%
+    var createAuthor = event.author();
+    var feedbackItem = event.stateFeedbackItem();
+    var revisionEntry = feedbackItem.revisionEntry();
+    var revision = feedbackItem.revision();
+    %>
+    <%- event.get("when") %>: <%- createAuthor.name() %> added feedback <br>
+    <dl>
+        <dt>Feedback Comment</dt>
+        <dd><%- feedbackItem.comment() %></dd>
+        <dt>File</dt>
+        <dd><%- revisionEntry.entry().path %> line <%- feedbackItem.lineNumber() %></dd>
+        <dt>Repo</dt>
+        <dd><%- revision.repo().name %></dd>
+        <dt>Revision Message</dt>
+        <dd><%- revision.logMessage() %></dd>
+        <dt>Revision Author</dt>
+        <dd><%- revision.get("author").name %> </dd>
+        <dt>Revision Date</dt>
+        <dd><%- revision.get("date") %> </dd>
+    </dl>
+</td>

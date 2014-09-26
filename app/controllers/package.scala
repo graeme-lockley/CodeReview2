@@ -71,7 +71,9 @@ package object controllers {
       "date" -> dateWriter.write(feedback.date),
       "responses" -> feedback.responses().map(x => responseWriter.write(x)),
       "lineNumber" -> feedback.lineNumber,
-      "status" -> issueStatusWriter.write(feedback.status)
+      "status" -> issueStatusWriter.write(feedback.status),
+      "revisionEntryID" -> feedback.revisionEntry.id,
+      "revisionID" -> feedback.revisionEntry.revisionID
     )
 
     def write(feedback: Traversable[Feedback]): JsValue = Json.toJson(feedback.map { r => write(r)})
@@ -172,5 +174,17 @@ package object controllers {
 
       write(Json.obj(), verbs)
     }
+  }
+
+  val eventWriter = new {
+    def write(event: models.Event): JsObject = Json.obj(
+      "id" -> event.id,
+      "authorID" -> event.who,
+      "when" -> dateWriter.write(event.when),
+      "name" -> event.name,
+      "state" -> event.whatJson
+    )
+
+    def write(events: Traversable[models.Event]): JsValue = Json.toJson(events.map { r => write(r)})
   }
 }

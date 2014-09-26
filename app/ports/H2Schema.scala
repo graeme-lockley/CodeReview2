@@ -229,12 +229,14 @@ object DBRevisionEntryFeedback {
     )
 }
 
-class DBEvent(val id: Long, val authorID: Long,  val when: Timestamp, val name: String, val content: String) extends KeyedEntity[Long]  {
+class DBEvent(val id: Long, val authorID: Long, val when: Timestamp, val name: String, val content: String) extends KeyedEntity[Long] {
   def this() = this(0, 0, new Timestamp(java.lang.System.currentTimeMillis()), "", "")
 }
 
 object DBEvent {
-  def apply(id: Long, authorID: Long,  when: Date, name: String, content: String) = new DBEvent(id, authorID, new Timestamp(when.getTime), name, content)
+  def apply(id: Long, authorID: Long, when: Date, name: String, content: String) = new DBEvent(id, authorID, new Timestamp(when.getTime), name, content)
+
+  def all(): Query[DBEvent] = from(Library.events)(w => select(w) orderBy(w.id desc))
 }
 
 object Library extends Schema {

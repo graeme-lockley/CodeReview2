@@ -19,12 +19,47 @@ function templateOnName(name) {
 }
 
 var Author = Backbone.Model.extend({
-    urlRoot: "/authors"
+    urlRoot: "/authors",
+
+    name: function() {
+        return this.get("name");
+    }
 });
 
 var Authors = Backbone.Collection.extend({
     model: Author,
     url: "/authors"
+});
+
+var Event = Backbone.Model.extend({
+    urlRoot: "/events",
+
+    author: function() {
+        if (this.get("author") == undefined) {
+            this.set("author", new Author({id: this.get("authorID")}));
+            this.get("author").fetch({async: false});
+        }
+        return this.get("author");
+    },
+    stateFeedbackItem: function() {
+        if (this.get("stateFeedbackItem") == undefined) {
+            this.set("stateFeedbackItem", new FeedbackItem({id: this.get("state").feedbackID}));
+            this.get("stateFeedbackItem").fetch({async: false});
+        }
+        return this.get("stateFeedbackItem");
+    },
+    stateRevision: function() {
+        if (this.get("stateRevision") == undefined) {
+            this.set("stateRevision", new Revision({id: this.get("state").revisionID}));
+            this.get("stateRevision").fetch({async: false});
+        }
+        return this.get("stateRevision");
+    }
+});
+
+var Events = Backbone.Collection.extend({
+    model: Event,
+    url: "/events"
 });
 
 var Revision = Backbone.Model.extend({
@@ -54,6 +89,9 @@ var Revision = Backbone.Model.extend({
     },
     repo: function () {
         return this.get("repo");
+    },
+    logMessage: function() {
+        return this.get("logMessage");
     },
     revisionEntries: function () {
         var entries = new RevisionEntries();
@@ -109,6 +147,9 @@ var RevisionEntry = Backbone.Model.extend({
     },
     feedback: function () {
         return new Feedback(this.get("feedback"), {revisionEntry: this});
+    },
+    entry: function() {
+        return this.get("entry");
     }
 });
 
@@ -120,7 +161,19 @@ var FeedbackItem = Backbone.Model.extend({
     urlRoot: "/feedback",
 
     revisionEntry: function () {
+        if (this.get("revisionEntry") == undefined) {
+            this.set("revisionEntry", new RevisionEntry({id: this.get("revisionEntryID")}));
+            this.get("revisionEntry").fetch({async: false});
+        }
         return this.get("revisionEntry");
+    },
+    revision: function() {
+        if (this.get("revision") == undefined) {
+            this.set("revision", new Revision({id: this.get("revisionID")}));
+            this.get("revision").fetch({async: false});
+        }
+        return this.get("revision");
+
     },
     comment: function () {
         return this.get("comment");

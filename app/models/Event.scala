@@ -10,9 +10,14 @@ case class Event(id: EventID, who: AuthorID, when: Date, name: EventName, whatSt
   def publish(): Unit = Event.publish(this)
 
   def what() = Event.fromJson(name, whatString)
+  def whatJson() = Json.parse(whatString)
 }
 
 object Event {
+  def all() = inTransaction {
+    DBEvent.all().map(x => Event(x.id, x.authorID, x.when, x.name, x.content))
+  }
+
   var marshaller: Map[String, EventStateMarshaller] = Map()
 
   marshaller = marshaller
@@ -25,10 +30,10 @@ object Event {
     Library.events.insert(DBEvent(event.id, event.who, event.when, event.name, event.whatString))
   }
 
-  def fromJson(eventName: String, input: String) = fromJson(eventName: String, Json.parse(input))
-  def fromJson(eventName: String, json: JsValue) = marshaller(eventName).fromJson(json)
+  def fromJson(eventName: String, input: String): EventState = fromJson(eventName: String, Json.parse(input))
+  def fromJson(eventName: String, json: JsValue):EventState = marshaller(eventName).fromJson(json)
 
-  def toJson(eventName: String, eventState: EventState) =  marshaller(eventName).toJson(eventState)
+  def toJson(eventName: String, eventState: EventState): JsValue =  marshaller(eventName).toJson(eventState)
 }
 
 trait EventStateMarshaller {
