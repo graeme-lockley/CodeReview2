@@ -23,14 +23,14 @@ object Feedback extends AuthController {
       Ok(feedbackWriter.write(feedback))
   }
 
-  def close(issueID: Long, authorID: Long) = Action(parse.json) {
+  def close(feedbackID: Long, authorID: Long) = Action(parse.json) {
     request =>
-      (Author.find(authorID), models.Feedback.find(issueID)) match {
+      (Author.find(authorID), models.Feedback.find(feedbackID)) match {
         case (Some(author), Some(issue)) =>
           issue.close(author) match {
             case Left(errorMessage) => BadRequest("{\"message\": \"" + errorMessage + "\"}")
             case Right(updatedIssue) =>
-              CloseFeedbackEvent(issueID, authorID).publish()
+              CloseFeedbackEvent(feedbackID, authorID).publish()
               Ok("{}")
           }
         case (Some(_), None) => BadRequest("{\"message\": \"Unknown issue\"}")
