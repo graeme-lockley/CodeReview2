@@ -39,9 +39,9 @@ object Feedback extends AuthController {
       }
   }
 
-  def show(issueID: Long) = Action {
+  def show(feedbackID: Long) = Action {
     request =>
-      val feedback = models.Feedback.find(issueID).get
+      val feedback = models.Feedback.find(feedbackID).get
 
       Ok(feedbackWriter.write(feedback))
   }
