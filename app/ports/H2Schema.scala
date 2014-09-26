@@ -1,6 +1,7 @@
 package ports
 
 import java.sql.Timestamp
+import java.util.Date
 
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.BinaryOperatorNodeLogicalBoolean
@@ -228,6 +229,14 @@ object DBRevisionEntryFeedback {
     )
 }
 
+class DBEvent(val id: Long, val authorID: Long,  val when: Timestamp, val name: String, val content: String) extends KeyedEntity[Long]  {
+  def this() = this(0, 0, new Timestamp(java.lang.System.currentTimeMillis()), "", "")
+}
+
+object DBEvent {
+  def apply(id: Long, authorID: Long,  when: Date, name: String, content: String) = new DBEvent(id, authorID, new Timestamp(when.getTime), name, content)
+}
+
 object Library extends Schema {
   val repos = table[DBRepo]("REPOS")
   val authors = table[DBAuthor]("AUTHORS")
@@ -236,6 +245,7 @@ object Library extends Schema {
   val revisionEntries = table[DBRevisionEntry]("REVISION_ENTRIES")
   val revisionEntriesContent = table[DBRevisionEntryContent]("REVISION_ENTRIES_CONTENT")
   val revisionEntryComment = table[DBRevisionEntryFeedback]("REVISION_ENTRY_FEEDBACK")
+  val events = table[DBEvent]("EVENTS")
 
   on(repos)(repo => declare(
     repo.id is autoIncremented
@@ -256,6 +266,9 @@ object Library extends Schema {
     revisionEntry.copyPath is dbType("varchar(512)"),
     columns(revisionEntry.repoID, revisionEntry.revisionID) are indexed,
     columns(revisionEntry.repoID, revisionEntry.path) are indexed
+  ))
+  on(events)(event => declare(
+    event.id is autoIncremented
   ))
 
   def repoRevisions(repoID: Long): Query[(DBRevision, DBRevisionEntry)] = {

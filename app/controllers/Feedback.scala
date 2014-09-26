@@ -1,6 +1,6 @@
 package controllers
 
-import models.{Author, Closed, Open, RevisionEntry}
+import models._
 import play.api.mvc.Action
 
 object Feedback extends AuthController {
@@ -11,12 +11,14 @@ object Feedback extends AuthController {
       val comment = (jsValue \ "comment").as[String]
       val authorID = (jsValue \ "authorID").as[Long]
       val revisionEntryID = (jsValue \ "revisionEntryID").as[Long]
-      val lineNumber = (jsValue \ "lineNumber").asOpt[Long]
+      val lineNumber = (jsValue \ "lineNumber").as[Long]
       val feedbackStatus = if ((jsValue \ "status").asOpt[String].exists(x => x.equals("open"))) Open() else Closed()
 
       val revisionEntry = RevisionEntry.find(revisionEntryID).get
       val author = Author.find(authorID).get
       val feedback = revisionEntry.addFeedback(lineNumber, comment, author, feedbackStatus)
+
+      CreateFeedbackEvent(comment, authorID, revisionEntryID, lineNumber, feedbackStatus, feedback.id).publish()
 
       Ok(feedbackWriter.write(feedback))
   }
@@ -27,7 +29,9 @@ object Feedback extends AuthController {
         case (Some(author), Some(issue)) =>
           issue.close(author) match {
             case Left(errorMessage) => BadRequest("{\"message\": \"" + errorMessage + "\"}")
-            case Right(updatedIssue) => Ok("{}")
+            case Right(updatedIssue) =>
+              CloseFeedbackEvent(issueID, authorID).publish()
+              Ok("{}")
           }
         case (Some(_), None) => BadRequest("{\"message\": \"Unknown issue\"}")
         case (None, Some(_)) => BadRequest("{\"message\": \"Unknown author\"}")

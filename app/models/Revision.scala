@@ -90,7 +90,7 @@ sealed trait RevisionEntry {
 
   def content(): String = RevisionEntry.content(id)
 
-  def addFeedback(lineNumber: Option[LineNumberType], comment: String, author: Author, status: FeedbackStatus): Feedback = Feedback.create(this, lineNumber, comment, author, new java.util.Date(), status)
+  def addFeedback(lineNumber: LineNumberType, comment: String, author: Author, status: FeedbackStatus): Feedback = Feedback.create(this, lineNumber, comment, author, new java.util.Date(), status)
 
   def feedback(): Traversable[Feedback] = RevisionEntry.feedback(this)
 }
@@ -111,7 +111,7 @@ object RevisionEntry {
 
   def feedback(revisionEntry: RevisionEntry): Traversable[Feedback] = inTransaction {
     DBRevisionEntryFeedback.directRevisionEntryFeedback(revisionEntry.id).map {
-      e => Feedback(e.id, e.logMessage, Author.get(e.authorID), e.date, revisionEntry, e.lineNumber, Feedback.dbToModel(e.status))
+      e => Feedback(e.id, e.logMessage, Author.get(e.authorID), e.date, revisionEntry, e.lineNumber.get, Feedback.dbToModel(e.status))
     }
   }
 

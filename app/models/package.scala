@@ -1,8 +1,10 @@
 package object models {
   type AuthorID = Long
+  type EventID = Long
   type FeedbackID = Long
   type ResponseID = Long
   type EmailAddress = String
+  type EventName = String
   type LineNumberType = Long
   type RepoID = Long
   type RepoAuthorID = Long
