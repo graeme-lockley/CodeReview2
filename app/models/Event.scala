@@ -10,6 +10,7 @@ case class Event(id: EventID, who: AuthorID, when: Date, name: EventName, whatSt
   def publish(): Unit = Event.publish(this)
 
   def what() = Event.fromJson(name, whatString)
+
   def whatJson() = Json.parse(whatString)
 }
 
@@ -22,6 +23,7 @@ object Event {
 
   marshaller = marshaller
     .+(("CreateFeedback", new CreateFeedbackEventMarshaller()))
+    .+(("CreateResponse", new CreateResponseEventMarshaller()))
     .+(("CloseFeedback", new CloseFeedbackEventMarshaller()))
 
   def apply(id: EventID, who: AuthorID, when: Date, name: EventName, what: EventState) = new Event(id, who, when, name, toJson(name, what).toString())
@@ -31,9 +33,10 @@ object Event {
   }
 
   def fromJson(eventName: String, input: String): EventState = fromJson(eventName: String, Json.parse(input))
-  def fromJson(eventName: String, json: JsValue):EventState = marshaller(eventName).fromJson(json)
 
-  def toJson(eventName: String, eventState: EventState): JsValue =  marshaller(eventName).toJson(eventState)
+  def fromJson(eventName: String, json: JsValue): EventState = marshaller(eventName).fromJson(json)
+
+  def toJson(eventName: String, eventState: EventState): JsValue = marshaller(eventName).toJson(eventState)
 }
 
 trait EventStateMarshaller {
@@ -50,12 +53,29 @@ trait EventState {
   def name(): String
 }
 
+case class CloseFeedbackEvent(feedbackID: FeedbackID, authorID: AuthorID) extends EventState {
+  def name() = "CloseFeedback"
+}
+
 case class CreateFeedbackEvent(comment: String, authorID: AuthorID, revisionEntryID: RevisionEntryID, lineNumber: LineNumberType, feedbackStatus: FeedbackStatus, feedbackID: FeedbackID) extends EventState {
   def name() = "CreateFeedback"
 }
 
-case class CloseFeedbackEvent(feedbackID: FeedbackID, authorID: AuthorID) extends EventState {
-  def name() = "CloseFeedback"
+case class CreateResponseEvent(responseID: ResponseID, feedbackID: FeedbackID, authorID: AuthorID, comment: String) extends EventState {
+  def name() = "CreateResponse"
+}
+
+class CloseFeedbackEventMarshaller extends EventStateMarshaller {
+  override def toJson(eventState: EventState): JsValue = {
+    val closeFeedbackEvent = eventState.asInstanceOf[CloseFeedbackEvent]
+    Json.obj(
+      "feedbackID" -> closeFeedbackEvent.feedbackID,
+      "authorID" -> closeFeedbackEvent.authorID
+    )
+  }
+
+  override def fromJson(json: JsValue): EventState =
+    CloseFeedbackEvent((json \ "feedbackID").as[Long], (json \ "authorID").as[Long])
 }
 
 class CreateFeedbackEventMarshaller extends EventStateMarshaller {
@@ -88,17 +108,22 @@ class CreateFeedbackEventMarshaller extends EventStateMarshaller {
     )
 }
 
-class CloseFeedbackEventMarshaller extends EventStateMarshaller {
+class CreateResponseEventMarshaller extends EventStateMarshaller {
   override def toJson(eventState: EventState): JsValue = {
-    val closeFeedbackEvent = eventState.asInstanceOf[CloseFeedbackEvent]
+    val createResponseEvent = eventState.asInstanceOf[CreateResponseEvent]
     Json.obj(
-      "feedbackID" -> closeFeedbackEvent.feedbackID,
-      "authorID" -> closeFeedbackEvent.authorID
+      "id" -> createResponseEvent.responseID,
+      "feedbackID" -> createResponseEvent.feedbackID,
+      "authorID" -> createResponseEvent.authorID,
+      "comment" -> createResponseEvent.comment
     )
   }
 
   override def fromJson(json: JsValue): EventState =
-    CloseFeedbackEvent((json \ "feedbackID").as[Long], (json \ "authorID").as[Long])
+    CreateResponseEvent(
+      (json \ "responseID").as[Long],
+      (json \ "feedbackID").as[Long],
+      (json \ "authorID").as[Long],
+      (json \ "comment").as[String]
+    )
 }
-
-
