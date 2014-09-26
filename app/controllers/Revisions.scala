@@ -1,6 +1,6 @@
 package controllers
 
-import models.Revision
+import models.{CancelReviewEvent, CompleteReviewEvent, Revision, StartReviewEvent}
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.BinaryOperatorNodeLogicalBoolean
 import play.api.mvc.{Action, RequestHeader, SimpleResult}
@@ -43,22 +43,23 @@ object Revisions extends AuthController {
   }
 
   def startReview(revisionID: Long) = Action {
-    implicit request => applyReviewAction(revisionID, x => x.startReview(loggedOnUser))
+    implicit request => applyReviewAction(revisionID, x => x.startReview(loggedOnUser), r => StartReviewEvent(revisionID, loggedOnUser.get.id).publish())
   }
 
   def cancelReview(revisionID: Long) = Action {
-    implicit request => applyReviewAction(revisionID, x => x.cancelReview(loggedOnUser))
+    implicit request => applyReviewAction(revisionID, x => x.cancelReview(loggedOnUser), r => CancelReviewEvent(revisionID, loggedOnUser.get.id).publish())
   }
 
   def completeReview(revisionID: Long) = Action {
-    implicit request => applyReviewAction(revisionID, x => x.completeReview(loggedOnUser))
+    implicit request => applyReviewAction(revisionID, x => x.completeReview(loggedOnUser), r => CompleteReviewEvent(revisionID, loggedOnUser.get.id).publish())
   }
 
-  private def applyReviewAction(revisionID: Long, action: Revision => Either[String, Revision])(implicit request: RequestHeader): SimpleResult =
+  private def applyReviewAction(revisionID: Long, action: Revision => Either[String, Revision], success: Revision => Unit)(implicit request: RequestHeader): SimpleResult =
     action(Revision.find(revisionID).get) match {
       case Left(l) => PreconditionFailed(l)
       case Right(r) =>
         Revision.save(r)
+        success(r)
         showRevision(r)
     }
 

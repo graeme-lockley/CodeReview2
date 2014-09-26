@@ -25,6 +25,9 @@ object Event {
     .+(("CreateFeedback", new CreateFeedbackEventMarshaller()))
     .+(("CreateResponse", new CreateResponseEventMarshaller()))
     .+(("CloseFeedback", new CloseFeedbackEventMarshaller()))
+    .+(("StartReview", new StartReviewEventMarshaller()))
+    .+(("CompleteReview", new CompleteReviewEventMarshaller()))
+    .+(("CancelReview", new CancelReviewEventMarshaller()))
 
   def apply(id: EventID, who: AuthorID, when: Date, name: EventName, what: EventState) = new Event(id, who, when, name, toJson(name, what).toString())
 
@@ -63,6 +66,18 @@ case class CreateFeedbackEvent(comment: String, authorID: AuthorID, revisionEntr
 
 case class CreateResponseEvent(responseID: ResponseID, feedbackID: FeedbackID, authorID: AuthorID, comment: String) extends EventState {
   def name() = "CreateResponse"
+}
+
+case class StartReviewEvent(revisionID: RevisionID, authorID: AuthorID) extends EventState {
+  def name() = "StartReview"
+}
+
+case class CompleteReviewEvent(revisionID: RevisionID, authorID: AuthorID) extends EventState {
+  def name() = "CompleteReview"
+}
+
+case class CancelReviewEvent(revisionID: RevisionID, authorID: AuthorID) extends EventState {
+  def name() = "CancelReview"
 }
 
 class CloseFeedbackEventMarshaller extends EventStateMarshaller {
@@ -125,5 +140,53 @@ class CreateResponseEventMarshaller extends EventStateMarshaller {
       (json \ "feedbackID").as[Long],
       (json \ "authorID").as[Long],
       (json \ "comment").as[String]
+    )
+}
+
+class StartReviewEventMarshaller extends EventStateMarshaller {
+  override def toJson(eventState: EventState): JsValue = {
+    val startReviewEvent = eventState.asInstanceOf[StartReviewEvent]
+    Json.obj(
+      "revisionID" -> startReviewEvent.revisionID,
+      "authorID" -> startReviewEvent.authorID
+    )
+  }
+
+  override def fromJson(json: JsValue): EventState =
+    StartReviewEvent(
+      (json \ "revisionID").as[Long],
+      (json \ "authorID").as[Long]
+    )
+}
+
+class CompleteReviewEventMarshaller extends EventStateMarshaller {
+  override def toJson(eventState: EventState): JsValue = {
+    val completeReviewEvent = eventState.asInstanceOf[CompleteReviewEvent]
+    Json.obj(
+      "revisionID" -> completeReviewEvent.revisionID,
+      "authorID" -> completeReviewEvent.authorID
+    )
+  }
+
+  override def fromJson(json: JsValue): EventState =
+    CompleteReviewEvent(
+      (json \ "revisionID").as[Long],
+      (json \ "authorID").as[Long]
+    )
+}
+
+class CancelReviewEventMarshaller extends EventStateMarshaller {
+  override def toJson(eventState: EventState): JsValue = {
+    val cancelReviewEvent = eventState.asInstanceOf[CancelReviewEvent]
+    Json.obj(
+      "revisionID" -> cancelReviewEvent.revisionID,
+      "authorID" -> cancelReviewEvent.authorID
+    )
+  }
+
+  override def fromJson(json: JsValue): EventState =
+    CancelReviewEvent(
+      (json \ "revisionID").as[Long],
+      (json \ "authorID").as[Long]
     )
 }

@@ -1,0 +1,14 @@
+<td>
+    <%
+    var reviewingAuthor = event.author();
+    var revision = event.stateRevision();
+    %>
+    <%- event.get("when") %>: <%- reviewingAuthor.name() %> cancelled review <br>
+    <dl>
+        <dt>Repo</dt>
+        <dd><%- revision.repo().name %></dd>
+        <dt>Message</dt>
+        <dd><%- revision.logMessage() %></dd>
+    </dl>
+</td>
+
