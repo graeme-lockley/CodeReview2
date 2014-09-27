@@ -77,6 +77,9 @@ var Revision = Backbone.Model.extend({
             return reviewAuthor;
         }
     },
+    reviewOutstanding: function () {
+        return this.reviewStatus() == "Outstanding";
+    },
     reviewInProgress: function () {
         return this.reviewStatus() == "In progress";
     },
@@ -94,10 +97,16 @@ var Revision = Backbone.Model.extend({
         return this.get("logMessage");
     },
     revisionEntries: function () {
-        var entries = new RevisionEntries();
-        entries.url = this.url() + "/revisionEntries";
-        entries.fetch({async: false});
-        return entries;
+        if (this.get("revisionEntries") == undefined) {
+            var entries = new RevisionEntries();
+            entries.url = this.url() + "/revisionEntries";
+            entries.fetch({async: false});
+            this.set("revisionEntries", entries);
+        }
+        return this.get("revisionEntries");
+    },
+    status: function() {
+        return this.revisionEntries().status();
     },
     number: function() {
         return this.get("number");
@@ -153,11 +162,29 @@ var RevisionEntry = Backbone.Model.extend({
     },
     entry: function() {
         return this.get("entry");
+    },
+    status: function() {
+        return this.feedback().status();
     }
 });
 
 var RevisionEntries = Backbone.Collection.extend({
-    model: RevisionEntry
+    model: RevisionEntry,
+
+    status: function() {
+        var status = "Closed";
+
+        this.forEach(function(revisionEntry) {
+            console.log("- ", revisionEntry.status());
+            if (revisionEntry.status() == "Open") {
+                status = "Open";
+            }
+        });
+
+        console.log("RevisionEntries.status", status);
+
+        return status;
+    }
 });
 
 var FeedbackItem = Backbone.Model.extend({
@@ -192,6 +219,9 @@ var FeedbackItem = Backbone.Model.extend({
     },
     responses: function () {
         return new FeedbackResponses(this.get("responses"));
+    },
+    status: function() {
+        return this.get("status");
     }
 });
 
@@ -203,6 +233,17 @@ var Feedback = Backbone.Collection.extend({
             feedbackItem.revisionEntry = options.revisionEntry;
         });
         return this;
+    },
+    status: function() {
+        var status = "Closed";
+
+        this.forEach(function(feedbackItem) {
+            if (feedbackItem.status() == "Open") {
+                status = "Open";
+            }
+        });
+
+        return status;
     }
 });
 
