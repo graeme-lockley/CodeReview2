@@ -99,6 +99,9 @@ var Revision = Backbone.Model.extend({
         entries.fetch({async: false});
         return entries;
     },
+    number: function() {
+        return this.get("number");
+    },
     verbs: function () {
         return this.get("verbs");
     },

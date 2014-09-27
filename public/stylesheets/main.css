@@ -14,3 +14,33 @@ body {
 .clickTarget {
     color: darkblue;
 }
+
+.cr-hidden-detail {
+}
+
+.cr-form {
+    padding: 10px;
+    margin-bottom: 3px;
+    margin-top: 3px;
+    border: solid 1px lightgrey;
+    border-radius: 2px;
+}
+
+.cr-row {
+    padding: 5px;
+}
+
+.cr-row + .cr-row {
+    border: 0 solid lightgrey;
+    border-top-width: 1px;
+}
+
+.cr-label {
+    width: 75px;
+    float: left;
+    font-size: smaller;
+    font-weight: bold;
+}
+
+.cr-value {
+}

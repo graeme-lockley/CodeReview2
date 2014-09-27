@@ -1,6 +1,6 @@
-<table class="table">
+<div class="list-group">
     <% events.forEach(function(event) { %>
-    <tr id="<%- prefix %>-<%- event.id %>">
-    </tr>
+    <a id="<%- prefix %>-<%- event.id %>" class="list-group-item" href="#">
+    </a>
     <% }); %>
-</table>
+</div>

@@ -1,14 +1,24 @@
-<td>
-    <%
-    var reviewingAuthor = event.author();
-    var revision = event.stateRevision();
-    %>
-    <%- event.get("when") %>: <%- reviewingAuthor.name() %> started review <br>
-    <dl>
-        <dt>Repo</dt>
-        <dd><%- revision.repo().name %></dd>
-        <dt>Message</dt>
-        <dd><%- revision.logMessage() %></dd>
-    </dl>
-</td>
+<%
+var reviewingAuthor = event.author();
+var revision = event.stateRevision();
+%>
+<small class="clickHeading"><%- reviewingAuthor.name() %> started review of <%- revision.author() %>'s revision #<%-
+    revision.number() %> <abbr class="timeago" title="<%- event.get('when') %>"></abbr>
+</small>
+<div class="cr-hidden-detail hide">
+    <div class="cr-form">
+        <div class="cr-row">
+            <div class="cr-label">Repo</div>
+            <div class="cr-value"><%- revision.repo().name %></div>
+        </div>
+        <div class="cr-row">
+            <div class="cr-label">Commit Message</div>
+            <div class="cr-value"><%- revision.logMessage() %></div>
+        </div>
+    </div>
+    <div class="btn-group btn-group-justified">
+        <div class="btn btn-default" data-url="/repos/<%- revision.repo().id %>">Repo...</div>
+        <div class="btn btn-default" data-url="/revisions/<%- revision.id %>/html">Revision...</div>
+    </div>
+</div>
 

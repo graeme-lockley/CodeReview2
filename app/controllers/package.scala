@@ -151,7 +151,7 @@ package object controllers {
   }
 
   val dateWriter = new {
-    def write(date: Date): JsString = JsString(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(date))
+    def write(date: Date): JsString = JsString(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date))
   }
 
   val issueStatusWriter = new {
