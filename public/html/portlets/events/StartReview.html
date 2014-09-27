@@ -2,9 +2,9 @@
 var reviewingAuthor = event.author();
 var revision = event.stateRevision();
 %>
-<small class="clickHeading"><%- reviewingAuthor.name() %> started review of <%- revision.author() %>'s revision #<%-
+<div class="cr-title"><%- reviewingAuthor.name() %> started review of <%- revision.author() %>'s revision #<%-
     revision.number() %> <abbr class="timeago" title="<%- event.get('when') %>"></abbr>
-</small>
+</div>
 <div class="cr-hidden-detail hide">
     <div class="cr-form">
         <div class="cr-row">
@@ -17,7 +17,7 @@ var revision = event.stateRevision();
         </div>
     </div>
     <div class="btn-group btn-group-justified">
-        <div class="btn btn-default" data-url="/repos/<%- revision.repo().id %>">Repo...</div>
+        <div class="btn btn-default" data-url="/repos/<%- revision.repo().id %>">Repo...</span></div>
         <div class="btn btn-default" data-url="/revisions/<%- revision.id %>/html">Revision...</div>
     </div>
 </div>

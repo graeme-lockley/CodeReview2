@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    var StartReviewEventView = Backbone.View.extend({
+    var EventView = Backbone.View.extend({
         events: {
             "click": "select"
         },
@@ -18,13 +18,6 @@ $(document).ready(function () {
         },
         render: function () {
             var prefix = this.$el.attr("id");
-            this.$el.html(_.template(templateOnName("portlets/events/StartReview.html"), {event: this.model, prefix: prefix}));
-        }
-    });
-
-    var EventView = Backbone.View.extend({
-        render: function () {
-            var prefix = this.$el.attr("id");
             this.$el.html(_.template(templateOnName("portlets/events/" + this.model.get("name") + ".html"), {event: this.model, prefix: prefix}));
         }
     });
@@ -39,12 +32,7 @@ $(document).ready(function () {
             this.$el.html(_.template(templateOnName("portlets/events/main.html"), {events: this.model, prefix: prefix}));
 
             this.model.forEach(function (event) {
-                var x = undefined;
-                if (event.get("name") == "StartReview") {
-                    x = new StartReviewEventView({model: event, el: "#" + prefix + "-" + event.id});
-                } else {
-                    x = new EventView({model: event, el: "#" + prefix + "-" + event.id});
-                }
+                var x = new EventView({model: event, el: "#" + prefix + "-" + event.id});
                 x.render();
             });
 
