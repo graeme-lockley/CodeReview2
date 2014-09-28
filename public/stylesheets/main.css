@@ -16,6 +16,11 @@ body {
     cursor: pointer; cursor: hand;
 }
 
+.my-textarea {
+    width: 100%;
+    height: 100px;
+}
+
 .cr-title {
     font-size: smaller;
 }
