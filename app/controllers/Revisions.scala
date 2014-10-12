@@ -18,7 +18,11 @@ object Revisions extends AuthController {
     implicit request =>
       val query = request.getQueryString("query")
       val all =
-        if (query.getOrElse("").equals("inProgressMine"))
+        if (query.getOrElse("").equals("myOpenReviews"))
+          if (loggedOnUser.isDefined) new MyOpenReviews(loggedOnUser.get).items() else List()
+        else if (query.getOrElse("").equals("myOpenRevisions"))
+          if (loggedOnUser.isDefined) new MyOpenRevisions(loggedOnUser.get).items() else List()
+        else if (query.getOrElse("").equals("inProgressMine"))
           Revision.all((r: DBRevision) => r.reviewStatus in Set(DBReviewStatus.InProgress) and r.reviewAuthorID === loggedOnUser.map(x => x.id))
         else if (query.isEmpty)
           Revision.all()
