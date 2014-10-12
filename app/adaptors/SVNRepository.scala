@@ -52,8 +52,6 @@ object SVNRepository {
         def convertLogEntry(logEntry: SVNLogEntry): (Revision, Traversable[RevisionEntry]) = {
             val revisionEntries = logEntry.getChangedPaths.values.asScala.map(convertLogEntryPath)
             val author = if (logEntry.getAuthor == null) None else Some(RepoAuthor(-1L, repo, None, logEntry.getAuthor))
-            System.out.println("convertLogEntry: " + logEntry.getRevision + " " + logEntry.getDate)
-
             (new Revision(-1L, repo, logEntry.getRevision, author, logEntry.getDate, logEntry.getMessage, ReviewOutstanding()), revisionEntries)
         }
 
