@@ -4,7 +4,7 @@
     <div class="header"><h1>&nbsp;</h1></div>
 
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-sm-12">
             <div class="panel panel-success">
                 <div class="panel-heading">
                     <h3 class="panel-title">Reviewing</h3>
@@ -14,13 +14,28 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6">
-            <div class="panel panel-success">
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-warning">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Events</h3>
+                    <h3 class="panel-title">Open Tasks On My Revisions</h3>
                 </div>
                 <div class="panel-body">
-                    <div id="myFeedback" class="events" data-collection="/events"></div>
+                    <div id="myOpenRevisions" class="revisions" data-collection="/revisions?query=myOpenRevisions" data-show-feedback="true"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Open Tasks On My Reviews</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="myOpenReviews" class="revisions" data-collection="/revisions?query=myOpenReviews" data-show-feedback="true"></div>
                 </div>
             </div>
         </div>
@@ -45,20 +60,6 @@
                 </div>
                 <div class="panel-body">
                     <div id="outstandingRevisions" class="revisions" data-collection="/revisions?query=outstanding" data-show-feedback="false"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="panel panel-success">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Completed Revision Reviews</h3>
-                </div>
-                <div class="panel-body">
-                    <div id="completeRevisions" class="revisions" data-collection="/revisions?query=complete" data-show-feedback="true"></div>
                 </div>
             </div>
         </div>
