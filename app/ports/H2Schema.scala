@@ -213,16 +213,16 @@ class DBRevisionEntryFeedback(val id: Long,
 
 object DBRevisionEntryFeedback {
   def all(filter: (DBRevisionEntryFeedback) => BinaryOperatorNodeLogicalBoolean) =
-    from(Library.revisionEntryComment)(r => where(filter(r)) select r)
+    from(Library.revisionEntryFeedback)(r => where(filter(r)) select r)
 
   def childrenByDate(parentID: Long): Traversable[DBRevisionEntryFeedback] =
-    from(Library.revisionEntryComment)(re =>
+    from(Library.revisionEntryFeedback)(re =>
       where(re.parentID === parentID) select re
         orderBy re.date
     )
 
   def directRevisionEntryFeedback(revisionEntryID: Long): Traversable[DBRevisionEntryFeedback] =
-    from(Library.revisionEntryComment)(re =>
+    from(Library.revisionEntryFeedback)(re =>
       where((re.parentID isNull) and (re.revisionEntryID === revisionEntryID))
         select re
         orderBy re.date
@@ -246,7 +246,7 @@ object Library extends Schema {
   val revisions = table[DBRevision]("REVISIONS")
   val revisionEntries = table[DBRevisionEntry]("REVISION_ENTRIES")
   val revisionEntriesContent = table[DBRevisionEntryContent]("REVISION_ENTRIES_CONTENT")
-  val revisionEntryComment = table[DBRevisionEntryFeedback]("REVISION_ENTRY_FEEDBACK")
+  val revisionEntryFeedback = table[DBRevisionEntryFeedback]("REVISION_ENTRY_FEEDBACK")
   val events = table[DBEvent]("EVENTS")
 
   on(repos)(repo => declare(

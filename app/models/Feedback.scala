@@ -26,13 +26,13 @@ case class Feedback(id: FeedbackID, comment: String, author: Author, date: Date,
 object Feedback {
   def create(revisionEntry: RevisionEntry, lineNumber: LineNumberType, comment: String, author: Author, date: Date, status: FeedbackStatus): Feedback = inTransaction {
     val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(UNKNOWN_REVISION_ENTRY_FEEDBACK_ID, None, author.id, revisionEntry.id, Some(lineNumber), comment, new Timestamp(date.getTime), DBRevisionEntryFeedbackType.Commentary, modelToDB(status))
-    val insertDBRevisionEntryFeedback = Library.revisionEntryComment.insert(dbRevisionEntryFeedback)
+    val insertDBRevisionEntryFeedback = Library.revisionEntryFeedback.insert(dbRevisionEntryFeedback)
 
     Feedback(insertDBRevisionEntryFeedback.id, comment, author, date, revisionEntry, lineNumber, status)
   }
 
   def find(feedbackID: FeedbackID): Option[Feedback] = inTransaction {
-    Library.revisionEntryComment.lookup(feedbackID) match {
+    Library.revisionEntryFeedback.lookup(feedbackID) match {
       case Some(comment) => Some(Feedback(feedbackID, comment.logMessage, Author.get(comment.authorID), comment.date, RevisionEntry.get(comment.revisionEntryID), comment.lineNumber.get, dbToModel(comment.status)))
       case None => None
     }
@@ -40,7 +40,7 @@ object Feedback {
 
   def update(feedback: Feedback): Feedback = inTransaction {
     val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(feedback.id, None, feedback.author.id, feedback.revisionEntry.id, Some(feedback.lineNumber), feedback.comment, new Timestamp(feedback.date.getTime), DBRevisionEntryFeedbackType.Issue, modelToDB(feedback.status))
-    Library.revisionEntryComment.update(dbRevisionEntryFeedback)
+    Library.revisionEntryFeedback.update(dbRevisionEntryFeedback)
     feedback
   }
 
@@ -60,7 +60,7 @@ case class Response(id: ResponseID, comment: String, author: Author, date: Date,
 object Response {
   def create(feedback: models.Feedback, comment: String, author: models.Author, date: Date): models.Response = inTransaction {
     val dbRevisionEntryFeedback = new DBRevisionEntryFeedback(UNKNOWN_REVISION_ENTRY_FEEDBACK_ID, Some(feedback.id), author.id, feedback.revisionEntry.id, Some(feedback.lineNumber), comment, new Timestamp(date.getTime), DBRevisionEntryFeedbackType.CommentaryResponse, DBRevisionEntryFeedbackStatus.Closed)
-    val insertDBRevisionEntryFeedback = Library.revisionEntryComment.insert(dbRevisionEntryFeedback)
+    val insertDBRevisionEntryFeedback = Library.revisionEntryFeedback.insert(dbRevisionEntryFeedback)
     Response(insertDBRevisionEntryFeedback.id, comment, author, date, feedback)
   }
 
