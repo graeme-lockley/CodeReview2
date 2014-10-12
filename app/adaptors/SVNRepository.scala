@@ -17,16 +17,17 @@ object SVNRepository {
     def refresh(repo: Repo): Unit = inTransaction {
         val repoID = repo.id
         val dbRepo = DBRepo.get(repoID)
-        for ((repoRevision: Revision, revisionEntries: RevisionEntry) <- repoRevisions(repo, dbRepo.largestRevisionNumber())) {
-            val dbRepoAuthorID = repoRevision.repoAuthor match {
+
+        for (repoRevision: (Revision, Traversable[RevisionEntry]) <- repoRevisions(repo, dbRepo.largestRevisionNumber())) {
+            val dbRepoAuthorID = repoRevision._1.repoAuthor match {
                 case Some(author) => Some(DBRepoAuthor.getOrCreate(author.repo.id, author.name).id)
                 case None => None
             }
-            val dbRevision = DBRevision(repoID, repoRevision.revisionNumber, dbRepoAuthorID, repoRevision.date.getTime, repoRevision.logMessage)
+            val dbRevision = DBRevision(repoID, repoRevision._1.revisionNumber, dbRepoAuthorID, repoRevision._1.date.getTime, repoRevision._1.logMessage)
 
             Library.revisions.insert(dbRevision)
 
-            for (revisionEntry <- revisionEntries) {
+            for (revisionEntry <- repoRevision._2) {
                 val dbRevisionEntry = revisionEntry match {
                     case AddEntry(id, revisionID, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.AddEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
                     case DeleteEntry(id, revisionID, entry) => new DBRevisionEntry(id, repoID, dbRevision.id, DBEntryType.DeleteEntry, entryToResourceType(revisionEntry.entry), revisionEntry.entry.path, None, None)
@@ -51,6 +52,8 @@ object SVNRepository {
         def convertLogEntry(logEntry: SVNLogEntry): (Revision, Traversable[RevisionEntry]) = {
             val revisionEntries = logEntry.getChangedPaths.values.asScala.map(convertLogEntryPath)
             val author = if (logEntry.getAuthor == null) None else Some(RepoAuthor(-1L, repo, None, logEntry.getAuthor))
+            System.out.println("convertLogEntry: " + logEntry.getRevision + " " + logEntry.getDate)
+
             (new Revision(-1L, repo, logEntry.getRevision, author, logEntry.getDate, logEntry.getMessage, ReviewOutstanding()), revisionEntries)
         }
 
@@ -73,6 +76,7 @@ object SVNRepository {
         }
         val endRevision = UNKNOWN_REVISION_ID
         val startRevision = if (revisionNumber == UNKNOWN_REVISION_NUMBER) INITIAL_REVISION_NUMBER else revisionNumber
+
         val logEntries = repository.log(Array(""), null, startRevision, endRevision, true, true).asInstanceOf[util.Collection[SVNLogEntry]]
         logEntries.asScala.filter(p => p.getRevision != revisionNumber).map((entry: SVNLogEntry) => convertLogEntry(entry))
     }
