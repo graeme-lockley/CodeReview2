@@ -21,8 +21,6 @@ object MyOpenReviews {
     val app = new play.core.StaticApplication(new java.io.File("."))
     val session = org.squeryl.Session.create(play.api.db.DB.getConnection()(app.application), new org.squeryl.adapters.H2Adapter)
 
-    for (x <- new MyOpenReviews(models.Author.get(1)).items()) {
-      println(x)
-    }
+    new MyOpenReviews(models.Author.get(1)).items() foreach println
   }
 }
