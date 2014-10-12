@@ -8,6 +8,7 @@ libraryDependencies ++= Seq(
 //  "com.h2database" % "h2" % "1.3.174",
   "org.tmatesoft.svnkit" % "svnkit" % "1.7.8",
   "com.googlecode.java-diff-utils" % "diffutils" % "1.2.1",
+  "org.postgresql" % "postgresql" % "9.3-1102-jdbc41",
   cache
 )     
 
