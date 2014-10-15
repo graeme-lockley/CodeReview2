@@ -84,7 +84,9 @@ var Revision = Backbone.Model.extend({
         return this.reviewStatus() == "In progress";
     },
     author: function () {
-        if (this.get("author").author == undefined) {
+        if (this.get("author") == undefined) {
+            return "no author";
+        } else if (this.get("author").author == undefined) {
             return this.get("author").name;
         } else {
             return this.get("author").author.name;
