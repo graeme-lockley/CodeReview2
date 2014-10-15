@@ -11,10 +11,12 @@ class MyOpenRevisions(val me: Author) {
 
   private def dbItems() =
     from(Library.revisions, Library.revisionEntries, Library.revisionEntryFeedback, Library.repoAuthors)((r, re, ref, ra) =>
-      where(r.id === re.revisionID and re.id === ref.revisionEntryID and
-        ref.parentID.isNull and ref.status.id === 1 and
+      where(r.id === re.revisionID and
+        re.id === ref.revisionEntryID and
+        ref.parentID.isNull and
+        ref.status.id === 1 and
         r.repoAuthorID === ra.id and
-        ra.id === me.id).select(r)).distinct
+        ra.authorID === me.id).select(r)).distinct
 }
 
 object MyOpenRevisions {
