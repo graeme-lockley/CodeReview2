@@ -27,11 +27,11 @@ object Auth extends AuthController {
 
       Author.findOnName(user) match {
         case Some(author) =>
-          Redirect(routes.Repos.list)
+          Redirect(routes.Application.index)
             .withSession(Security.username -> s"${author.id}")
             .flashing("success" -> s"You have successfully logged on - welcome back ${author.name}")
         case None =>
-          Redirect(routes.Repos.list)
+          Redirect(routes.Application.index)
             .withSession()
             .flashing("error" -> "Unable to login with that user name/password combination.")
       }
@@ -41,7 +41,7 @@ object Auth extends AuthController {
     implicit request =>
       val author = loggedOnUser
 
-      Redirect(routes.Repos.list)
+      Redirect(routes.Application.index)
         .withSession()
         .flashing("info" -> s"You have successfully been logged out - cheerio ${if (author.isEmpty) "" else author.get.name}")
   }
