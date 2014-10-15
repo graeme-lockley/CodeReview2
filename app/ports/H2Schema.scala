@@ -225,7 +225,7 @@ object DBRevisionEntryFeedback {
     from(Library.revisionEntryFeedback)(re =>
       where((re.parentID isNull) and (re.revisionEntryID === revisionEntryID))
         select re
-        orderBy re.date
+        orderBy re.lineNumber
     )
 }
 
