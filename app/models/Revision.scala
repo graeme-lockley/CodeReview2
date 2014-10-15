@@ -180,7 +180,6 @@ object Review {
 
 case class ReviewOutstanding() extends Review {
   override def toString = "Outstanding"
-
 }
 
 case class ReviewInProgress(author: Author) extends Review {
